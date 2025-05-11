@@ -7,3 +7,5 @@ importlib
 openai
 uvicorn
 openai
+requests
+airtable
