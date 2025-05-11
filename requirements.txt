@@ -1,0 +1,9 @@
+pymongo
+fastapi
+python-dotenv
+schedule
+asyncio
+importlib
+openai
+uvicorn
+openai
