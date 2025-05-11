@@ -32,6 +32,20 @@ async def addDevice(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to register device")
 
+@router.get("/devices")
+async def getDevices(request: Request):
+    auth = request.headers.get("X-Secure-Key")
+
+    if auth != os.environ.get("SECURE_KEY"):
+        raise HTTPException(status_code=403, detail="Invalid authentication key")
+    
+    try:
+        devices = list(mongo.db.devices.find())
+        for device in devices:
+            device["_id"] = str(device["_id"])
+        return devices
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to fetch devices")
 
 @router.get("/history")
 async def getNotificationHistory(request: Request):
