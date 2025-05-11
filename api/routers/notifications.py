@@ -59,9 +59,9 @@ async def getNotificationHistory(request: Request):
     try:
         if device:
             notifications = list(
-            mongo.db.notifications.find(
-                {"deviceToken": device}
-            ).sort("createdAt", -1).limit(50)
+                mongo.db.notifications.find(
+                    {"$or": [{"deviceToken": device}, {"deviceToken": "all"}]}
+                ).sort("createdAt", -1).limit(50)
             )
         else:
             notifications = list(
@@ -139,6 +139,5 @@ async def sendNotification(request: Request):
         )
         return {"success": True, "message": "Notification sent successfully"}
     except Exception as e:
-        print(e)
         raise HTTPException(status_code=500, detail="Failed to send notification")
 
