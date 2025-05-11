@@ -4,7 +4,6 @@ import datetime
 def getValidRules():
     with open('data/rules.json', 'r') as file:
         rules = json.load(file)
-    
     valid_rules = []
     current_time = datetime.datetime.now(datetime.timezone.utc)
     for rule in rules:
@@ -17,14 +16,7 @@ def getValidRules():
                     valid_rules.append({
                         "id": rule.get("id", ""),
                         "createdTime": rule.get("createdTime", ""),
-                        "fields": {
-                            "ruleNumber": fields.get("ruleNumber", ""),
-                            "start": fields.get("start", ""),
-                            "end": fields.get("end", ""),
-                            "disableWeathery": fields.get("disableWeathery", False),
-                            "comment": fields.get("comment", "")
-                        }
+                        "fields": rule["fields"]
                     })
-    
     return valid_rules
 

@@ -6,13 +6,15 @@ import os
 from utils.getWeatherData import getTodayForecast
 from utils.getRules import getValidRules
 from utils.mailer import Mailer
+from utils.pusher import Pusher
 
 ai = AI()
 mailer = Mailer()
+pusher = Pusher()
 
 class Weathery(BaseHelper):
     def __init__(self):
-        super().__init__(run_at_start=False)
+        super().__init__(run_at_start=True)
 
     def run(self):
         print("[Weathery] Started at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -22,8 +24,8 @@ class Weathery(BaseHelper):
 
             if rule.get("fields", {}).get("disableWeathery"):
                 print(f"[Weathery] Rule {rule.get("fields", {}).get("ruleNumber")} triggered: {rule.get("fields", {}).get("comment")} - Weathery disabled")
-            print("[Weathery] Finished at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            return
+                print("[Weathery] Finished at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                return
         
         weatherForecast = getTodayForecast()
         print(f"[Weathery] Obtained weather forecast")
@@ -39,7 +41,8 @@ class Weathery(BaseHelper):
         Não deves usar markdown, nem HTML, nem emojis, nem nada disso. Apenas texto puro.
         Não termines o email com 'Espero que isso te ajude', ou algo do género. Não termines o email com uma pergunta.
         Faz um email amigável, mas não muito formal. Não uses palavras como 'caro' ou 'atenciosamente'. Usa parágrafos grandes, mas com espaçamentos.
-        O vento está e, km/h.Aqui estão as informações 'raw' obtidas pelo OpenWeatherMap: \n\n{weatherForecast}"""
+        Termina o teu email com 'Cumprimentos, \nWeathery'.
+        O vento está em km/h.Aqui estão as informações 'raw' obtidas pelo OpenWeatherMap: \n\n{weatherForecast}"""
         aiResponseText = ai.prompt(prompt)
         aiResponseSubject = ai.prompt(f"Qual seria o assunto do email? Diz apenas, e apenas um, e apenas 1, titulo sobre a previsão do tempo para HOJE. 'hoje' escreve-se com letra minuscula. Diz apenas o titulo diretamente. NÃO digas coisas como 'Aqui está o titulo' nem nada parecido.Aqui está o conteúdo do email: {aiResponseText}")
         
@@ -51,6 +54,23 @@ class Weathery(BaseHelper):
             to=os.environ.get("TO_EMAIL"),
         )
         print(f"[Weathery] Email sent. ID: {mail["id"]}")
+
+        promptPusher = f"""Escreve uma notificação para o Afonso, com o resumo do tempo para hoje.
+        Deve fazer uma descrição do tempo, temperatura, vento e humidade. Refere-se se vai ou não chover, entre outras informações que aches relevantes.
+        Esta será uma notificação, por isso deve ser curta e direta ao ponto.
+        Não deves usar markdown, nem HTML, nem emojis, nem nada disso. Apenas texto puro com acentos e simbolos.
+        O vento está em km/h.
+        Não cumprimentes o Afonso, e tenta com que a tua notificação fique com cerca de 30 palavras. Refere temperaturas, vento, humidade, e se vai chover ou não.
+        Aqui estão os dados 'raw' obtidos pelo OpenWeatherMap: \n\n{weatherForecast}"""
+
+        pusher.bulkPush(
+            title="Previsão do tempo para hoje",
+            body=ai.prompt(promptPusher),
+            data={
+                "helper": "weathery",
+            },
+        )
+        print(f"[Weathery] Pushed notification")
         print("[Weathery] Finished at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     def schedule(self):
