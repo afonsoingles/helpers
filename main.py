@@ -1,8 +1,6 @@
 import schedule
-import time
 import importlib
 import os
-import sys
 import asyncio
 from dotenv import load_dotenv
 from bases.helper import BaseHelper
@@ -62,8 +60,7 @@ async def main():
         "python", "-m", "uvicorn", "api.main:app",
         "--host", "0.0.0.0",
         "--port", os.environ.get("API_PORT", "8000"),
-        "--log-level", os.environ.get("API_LOG_LEVEL", "info"),
-        "--reload"
+        "--log-level", os.environ.get("API_LOG_LEVEL", "info")
     )
 
     print("[STARTUP] Startup done. Waiting for scheduled tasks...")
