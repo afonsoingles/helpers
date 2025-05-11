@@ -14,7 +14,7 @@ pusher = Pusher()
 
 class Weathery(BaseHelper):
     def __init__(self):
-        super().__init__(run_at_start=True)
+        super().__init__(run_at_start=False)
 
     def run(self):
         print("[Weathery] Started at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
