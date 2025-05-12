@@ -15,4 +15,4 @@ pip install -r requirements.txt
 
 systemctl --user start "$HOST_SERVICE_NAME"
 deactivate
-
+echo "Update completed successfully."
