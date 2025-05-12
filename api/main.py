@@ -9,4 +9,4 @@ app.include_router(api.routers.webhooks.router, prefix="/v1/webhooks", tags=["We
 
 @app.get("/")
 async def root():
-    return {"message": "hello world"}
+    return {"message": "hello world :)"}
