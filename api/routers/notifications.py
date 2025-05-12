@@ -3,7 +3,7 @@ from api.utils.pusher import InternalPusher
 from utils.mongoHandler import MongoHandler
 import datetime
 import os
-import requests
+
 
 
 mongo = MongoHandler()
