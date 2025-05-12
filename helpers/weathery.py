@@ -2,11 +2,11 @@ from utils.ai import AI
 from bases.helper import BaseHelper
 import schedule
 from datetime import datetime
-import os
 from utils.getWeatherData import getTodayForecast
 from utils.getRules import getValidRules
 from utils.mailer import Mailer
 from utils.pusher import Pusher
+import os
 
 ai = AI()
 mailer = Mailer()
@@ -74,5 +74,4 @@ class Weathery(BaseHelper):
         print("[Weathery] Finished at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     def schedule(self):
-        print(f"08:40 - {os.environ.get('TIMEZONE')}")
-        schedule.every().day.at("08:40 AM").do(self.run)
+        schedule.every().day.at(f"08:40:00", os.environ.get("TIMEZONE")).do(self.run)

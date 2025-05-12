@@ -29,5 +29,5 @@ class rulesUpdater(BaseHelper):
         print("[rulesUpdater] Finished at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     def schedule(self):
-        timeSuffix = "AM" if os.environ.get("AM_PM_ENABLED") == "true" else ""
-        schedule.every().day.at(f"08:40{timeSuffix}", os.environ.get("TIMEZONE")).do(self.run)
+       
+        schedule.every(1).hours.do(self.run)
