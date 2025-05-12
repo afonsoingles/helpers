@@ -3,6 +3,7 @@ from api.utils.pusher import InternalPusher
 from utils.mongoHandler import MongoHandler
 import datetime
 import os
+import subprocess
 
 
 
@@ -20,5 +21,6 @@ async def githubWebhook(request: Request):
         raise HTTPException(status_code=403, detail="Invalid GitHub Hook ID")
     
     print("[IMPORTANT - CRITICAL] Restarting to perform update")
-    os.system(f"bash scripts/update.sh")
+    script_path = os.path.join(os.path.dirname(__file__), "../scripts/update.sh")
+    subprocess.run(["bash", script_path], check=True)
     return {"message": "Update script executed successfully"}

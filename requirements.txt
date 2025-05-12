@@ -10,3 +10,4 @@ openai
 requests
 airtable
 pytz
+subprocess
