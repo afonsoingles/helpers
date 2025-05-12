@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -a
-source .env
+source ../../.env
 set +a
 
 cd "$HOST_DIR" || exit 1
