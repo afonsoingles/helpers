@@ -74,4 +74,5 @@ class Weathery(BaseHelper):
         print("[Weathery] Finished at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     def schedule(self):
-        schedule.every().day.at("08:40").do(self.run)
+        timeSuffix = "AM" if os.environ.get("AM_PM_ENABLED") == "true" else ""
+        schedule.every().day.at(f"08:40{timeSuffix}", os.environ.get("TIMEZONE")).do(self.run)
