@@ -14,4 +14,4 @@ pusher = InternalPusher()
 @router.post("/github")
 async def githubWebhook(request: Request):
     print(request.headers)
-    print(request.text)
+    print(request.json())
