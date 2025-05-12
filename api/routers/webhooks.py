@@ -20,5 +20,5 @@ async def githubWebhook(request: Request):
         raise HTTPException(status_code=403, detail="Invalid GitHub Hook ID")
     
     print("[IMPORTANT - CRITICAL] Restarting to perform update")
-    os.system(f"cd {os.environ.get("HOST_DIR")} && bash scripts/update.sh")
+    os.system(f"cd bash scripts/update.sh")
     return {"message": "Update script executed successfully"}
