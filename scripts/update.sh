@@ -6,6 +6,7 @@ set +a
 
 cd "$HOST_DIR" || exit 1
 
+systemctl --user stop "$HOST_SERVICE_NAME"
 git pull
 
 source venv/bin/activate

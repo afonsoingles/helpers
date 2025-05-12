@@ -13,5 +13,12 @@ pusher = InternalPusher()
 
 @router.post("/github")
 async def githubWebhook(request: Request):
-    print(request.headers)
-    print(request.json())
+
+    githubHook = request.headers.get("X-GitHub-Hook-ID")
+
+    if str(githubHook) != str(os.environ.get("GITHUB_HOOK_ID")):
+        raise HTTPException(status_code=403, detail="Invalid GitHub Hook ID")
+    
+    print("[IMPORTANT - CRITICAL] Restarting to perform update")
+    os.system("bash scripts/update.sh")
+    return {"message": "Update script executed successfully"}
