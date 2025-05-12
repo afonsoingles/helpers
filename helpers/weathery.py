@@ -59,7 +59,7 @@ class Weathery(BaseHelper):
         Deve fazer uma descrição do tempo, temperatura, vento e humidade. Refere-se se vai ou não chover, entre outras informações que aches relevantes.
         Esta será uma notificação, por isso deve ser curta e direta ao ponto.
         Não deves usar markdown, nem HTML, nem emojis, nem nada disso. Apenas texto puro com acentos e simbolos.
-        O vento está em km/h.
+        O vento está em km/.
         A humidade deve estar em %.
         Não cumprimentes o Afonso, e tenta com que a tua notificação fique com cerca de 30 palavras. Refere temperaturas, vento, humidade, e se vai chover ou não.
         Aqui estão os dados 'raw' obtidos pelo OpenWeatherMap: \n\n{weatherForecast}"""
