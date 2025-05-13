@@ -24,7 +24,7 @@ class InternalPusher:
         except Exception as e:
             raise Exception(f"Failed to send push notification: {e}")
     
-    def bulk_push(self, tokens, title, body, data, isCritical=False):
+    def bulk_push(self, tokens, title, body, data, ttl, isCritical=False):
         try:
             response = requests.post(
                 "https://exp.host/--/api/v2/push/send",
@@ -36,7 +36,7 @@ class InternalPusher:
                     "data": data,
                     "interruptionLevel": "critical" if isCritical else "active",
                     "badge": 0,
-                    "ttl": 1,
+                    "ttl": ttl,
                     "priority": "high",
                 }
             )
