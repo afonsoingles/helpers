@@ -33,5 +33,4 @@ class rulesUpdater(BaseHelper):
         schedule.every().hour.at(":00").do(self.run)
 
         for minute in range(30):
-            print(minute)
             schedule.every().day.at(f"08:{minute}:00").do(self.run)
