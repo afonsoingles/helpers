@@ -98,6 +98,12 @@ async def sendNotification(request: Request):
             sendAll = json["sendAll"]
         except:
             sendAll = False
+        
+        try:
+            ttl = json["ttl"]
+        except:
+            ttl = 1
+
         if sendAll:
             allDevices = mongo.db.devices.find()
             tokensList = []
@@ -109,6 +115,7 @@ async def sendNotification(request: Request):
                 json["title"],
                 json["body"],
                 data,
+                ttl,
                 isCritical,
             )
         else:
@@ -118,6 +125,7 @@ async def sendNotification(request: Request):
                 json["title"],
                 json["body"],
                 data,
+                ttl,
                 isCritical,
             )
 

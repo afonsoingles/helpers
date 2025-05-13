@@ -3,7 +3,7 @@ import requests
 
 class InternalPusher:
     
-    def single_push(self, to, title, body, data, isCritical=False):
+    def single_push(self, to, title, body, data, ttl, isCritical=False):
         try:
             response = requests.post(
                 "https://exp.host/--/api/v2/push/send",
@@ -15,7 +15,7 @@ class InternalPusher:
                     "data": data,
                     "interruptionLevel": "critical" if isCritical else "active",
                     "badge": 0,
-                    "ttl": 1,
+                    "ttl": ttl,
                     "priority": "high",
 
                 }
