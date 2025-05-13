@@ -7,4 +7,4 @@ app.include_router(api.routers.notifications.router, prefix="/v1/notifications",
 
 @app.get("/")
 async def root():
-    return {"message": "hello world."}
+    return {"message": "hello world"}
