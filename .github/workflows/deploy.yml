@@ -1,4 +1,4 @@
-name: Deploy to Server
+name: Deploy com SSH -vvv
 
 on:
   push:
@@ -10,31 +10,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    - name: Preparar chave SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
 
-    - name: Deploy via SSH
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        script: |
-          set -e 
+    - name: Testar ligação SSH com -vvv
+      run: |
+        ssh -vvv -o StrictHostKeyChecking=no \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          "echo 'Ligação SSH bem-sucedida com -vvv'"
 
-          echo "Stopping Service"
-          systemctl --user stop ${{ secrets.SERVICE_NAME }}
+    - name: Fazer deploy remoto
+      run: |
+        ssh -o StrictHostKeyChecking=no \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            set -e
 
-          echo "Updating..."
-          cd ${{ secrets.APP_DIR }}
-          git pull origin master
+            echo "A parar o serviço..."
+            systemctl --user stop ${{ secrets.SERVICE_NAME }}
 
-          echo "Enabling the venv."
-          source venv/bin/activate
+            echo "A mudar para o diretório do projeto..."
+            cd ${{ secrets.APP_DIR }}
 
-          echo "Installing dependencies"
-          pip install -r requirements.txt
+            echo "A fazer git pull..."
+            git pull origin master
 
-          echo "Starting the service again"
-          systemctl --user start ${{ secrets.SERVICE_NAME }}
-          echo "Done!"
+            echo "A ativar o venv..."
+            source venv/bin/activate
+
+            echo "A instalar dependências..."
+            pip install -r requirements.txt
+
+            echo "A iniciar o serviço..."
+            systemctl --user start ${{ secrets.SERVICE_NAME }}
+        EOF
