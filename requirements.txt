@@ -10,4 +10,4 @@ openai
 requests
 airtable
 pytz
-redis-python
+redis
