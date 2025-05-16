@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from utils.mongoHandler import MongoHandler
-from utils.redis import redisClient
+from api.utils.redis import redisClient
 import os
 import json
 import jwt

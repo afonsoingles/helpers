@@ -11,3 +11,4 @@ requests
 airtable
 pytz
 redis
+PyJWT
