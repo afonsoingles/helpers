@@ -1,6 +1,6 @@
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
-from api.errors.exceptions import GlobalApiError, BadRequest, NotFound, Unauthorized, MethodNotAllowed
+import api.errors.exceptions as exceptions
 from api.errors.handlers import create_exception_handler
 import api.routers.notifications
 import api.middleware.auth
@@ -36,11 +36,13 @@ async def notFound(request, exc):
     )
 
 exceptionHandlers = {
-    GlobalApiError: (status.HTTP_500_INTERNAL_SERVER_ERROR, "InternalServerError"),
-    BadRequest: (status.HTTP_400_BAD_REQUEST, "BadRequest"),
-    NotFound: (status.HTTP_404_NOT_FOUND, "NotFound"),
-    Unauthorized: (status.HTTP_401_UNAUTHORIZED, "Unauthorized"),
-    MethodNotAllowed: (status.HTTP_405_METHOD_NOT_ALLOWED, "MethodNotAllowed"),
+    exceptions.GlobalApiError: (status.HTTP_500_INTERNAL_SERVER_ERROR, "InternalServerError"),
+    exceptions.BadRequest: (status.HTTP_400_BAD_REQUEST, "BadRequest"),
+    exceptions.NotFound: (status.HTTP_404_NOT_FOUND, "NotFound"),
+    exceptions.Unauthorized: (status.HTTP_401_UNAUTHORIZED, "Unauthorized"),
+    exceptions.MethodNotAllowed: (status.HTTP_405_METHOD_NOT_ALLOWED, "MethodNotAllowed"),
+    exceptions.Forbidden: (status.HTTP_403_FORBIDDEN, "Forbidden"),
+
 }
 
 for exc_class, (status_code, message) in exceptionHandlers.items():

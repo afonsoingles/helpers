@@ -30,3 +30,9 @@ class MethodNotAllowed(GlobalApiError):
 
     def __init__(self, message: str = "", type: str = ""):
         super().__init__(message, type)
+
+class Forbidden(GlobalApiError):
+    """Forbidden"""
+
+    def __init__(self, message: str = "", type: str = ""):
+        super().__init__(message, type)

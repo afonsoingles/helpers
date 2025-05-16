@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Request
 from api.utils.pusher import InternalPusher
 from utils.mongoHandler import MongoHandler
+import api.errors.exceptions as exceptions
 import datetime
 import os
 
@@ -14,38 +15,36 @@ pusher = InternalPusher()
 @router.post("/devices/add")
 async def addDevice(request: Request):
     json = await request.json()
-    try:
-        mongo.db.devices.update_one(
-            {"pushToken": json["pushToken"]},
-            {
-            "$set": {
-                "deviceName": json["deviceName"],
-                "pushToken": json["pushToken"],
-                "platform": json["platform"],
-                "supportsCritical": json["supportsCritical"],
-                "lastSeen": datetime.datetime.now(datetime.timezone.utc),
-            }
-            },
-            upsert=True,
-        )
-        return {"success": True, "message": "Device registered successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to register device")
+
+    mongo.db.devices.update_one(
+        {"pushToken": json["pushToken"]},
+        {
+        "$set": {
+            "deviceName": json["deviceName"],
+            "pushToken": json["pushToken"],
+            "platform": json["platform"],
+            "supportsCritical": json["supportsCritical"],
+            "lastSeen": datetime.datetime.now(datetime.timezone.utc),
+        }
+    },
+    upsert=True,
+    )
+    return {"success": True, "message": "Device registered successfully"}
+
 
 @router.get("/devices")
 async def getDevices(request: Request):
     auth = request.headers.get("X-Secure-Key")
 
     if auth != os.environ.get("SECURE_KEY"):
-        raise HTTPException(status_code=403, detail="Invalid authentication key")
+        raise exceptions.Unauthorized(message="Invalid Authentication key", type="invalid_key")
     
-    try:
-        devices = list(mongo.db.devices.find())
-        for device in devices:
-            device["_id"] = str(device["_id"])
-        return devices
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to fetch devices")
+    
+
+    devices = list(mongo.db.devices.find())
+    for device in devices:
+         device["_id"] = str(device["_id"])
+    return devices
 
 @router.get("/history")
 async def getNotificationHistory(request: Request):
@@ -56,23 +55,22 @@ async def getNotificationHistory(request: Request):
         device = json["deviceToken"]
     except:
         device = None
-    try:
-        if device:
-            notifications = list(
-                mongo.db.notifications.find(
-                    {"$or": [{"deviceToken": device}, {"deviceToken": "all"}]}
-                ).sort("createdAt", -1).limit(50)
-            )
-        else:
-            notifications = list(
+
+    if device:
+        notifications = list(
+            mongo.db.notifications.find(
+                {"$or": [{"deviceToken": device}, {"deviceToken": "all"}]}
+            ).sort("createdAt", -1).limit(50)
+        )
+    else:
+        notifications = list(
             mongo.db.notifications.find().sort("createdAt", -1).limit(50)
-            )
-        
-        for notification in notifications:
-            notification["_id"] = str(notification["_id"])
-        return notifications
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to fetch notification history")
+        )
+    
+    for notification in notifications:
+        notification["_id"] = str(notification["_id"])
+    return notifications
+
 
 
 @router.post("/send")
@@ -81,71 +79,69 @@ async def sendNotification(request: Request):
     json = await request.json()
 
     if auth != os.environ.get("SECURE_KEY"):
-        raise HTTPException(status_code=403, detail="Invalid authentication key")
+        raise exceptions.Unauthorized(message="Invalid Authentication key", type="invalid_key")
+    
+
+    try:
+        isCritical = json["isCritical"]
+    except:
+        isCritical = False
+
+    try:
+        data = json["data"]
+    except:
+        data = {}
     
     try:
-        try:
-            isCritical = json["isCritical"]
-        except:
-            isCritical = False
+        sendAll = json["sendAll"]
+    except:
+        sendAll = False
+    
+    try:
+        ttl = json["ttl"]
+    except:
+        ttl = 1
 
-        try:
-            data = json["data"]
-        except:
-            data = {}
+    if sendAll:
+        allDevices = mongo.db.devices.find()
+        tokensList = []
+        for device in allDevices:
+            tokensList.append(device["pushToken"])
         
-        try:
-            sendAll = json["sendAll"]
-        except:
-            sendAll = False
-        
-        try:
-            ttl = json["ttl"]
-        except:
-            ttl = 1
-
-        if sendAll:
-            allDevices = mongo.db.devices.find()
-            tokensList = []
-            for device in allDevices:
-                tokensList.append(device["pushToken"])
-            
-            pusher.bulk_push(
-                tokensList,
-                json["title"],
-                json["body"],
-                data,
-                ttl,
-                isCritical,
-            )
-        else:
-
-            pusher.single_push(
-                json["deviceToken"],
-                json["title"],
-                json["body"],
-                data,
-                ttl,
-                isCritical,
-            )
-
-        try:
-            deviceToken = json["deviceToken"]
-        except:
-            deviceToken = "all"
-        
-        mongo.db.notifications.insert_one(
-            {
-                "title": json["title"],
-                "body": json["body"],
-                "data": data,
-                "deviceToken": deviceToken,
-                "isCritical": isCritical,
-                "status": "sent",
-                "createdAt": datetime.datetime.now(datetime.timezone.utc),
-            }
+        pusher.bulk_push(
+            tokensList,
+            json["title"],
+            json["body"],
+            data,
+            ttl,
+            isCritical,
         )
-        return {"success": True, "message": "Notification sent successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to send notification")
+    else:
+        pusher.single_push(
+            json["deviceToken"],
+            json["title"],
+            json["body"],
+            data,
+            ttl,
+            isCritical,
+        )
+
+    try:
+        deviceToken = json["deviceToken"]
+    except:
+        deviceToken = "all"
+    
+    mongo.db.notifications.insert_one(
+        {
+            "title": json["title"],
+            "body": json["body"],
+            "data": data,
+            "deviceToken": deviceToken,
+            "isCritical": isCritical,
+            "status": "sent",
+            "createdAt": datetime.datetime.now(datetime.timezone.utc),
+        }
+    )
+    return {"success": True, "message": "Notification sent successfully"}
+
 

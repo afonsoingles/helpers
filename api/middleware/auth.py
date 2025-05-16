@@ -2,6 +2,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from fastapi.responses import JSONResponse
 from api.utils.authDb import AuthenticationDb
+import api.errors.exceptions as exceptions
 import re
 
 auth = AuthenticationDb()
@@ -14,9 +15,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
         if self._is_protected(path):
-            auth_header = request.headers.get("Authorization")
+            auth_header = request.headers.get("Authorization") or request.headers.get("authorization")
             if not auth_header or not auth_header.startswith("Bearer "):
-                return JSONResponse({"success": False, "message": "Missing "}, status_code=401)
+                return exceptions.BadRequest(message="No authentication token provided", type="missing_token")
 
             token = auth_header.split(" ")[1]
             try:
@@ -24,7 +25,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 user = await auth.get_user(email)
                 request.state.user = user
             except Exception as e:
-                return JSONResponse({"detail": str(e)}, status_code=401)
+                return exceptions.Unauthorized("Invalid or expired token", type="invalid_token")
 
         return await call_next(request)
 
