@@ -1,9 +1,54 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status
+from fastapi.responses import JSONResponse
+from api.errors.exceptions import GlobalApiError, BadRequest, NotFound, Unauthorized, MethodNotAllowed
+from api.errors.handlers import create_exception_handler
 import api.routers.notifications
+import api.middleware.auth
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, title="Helpers API", version="1.0.0")
 
+# Routers
 app.include_router(api.routers.notifications.router, prefix="/v1/notifications", tags=["Notifications"])
+
+
+# Middlewares
+app.add_middleware(api.middleware.auth.AuthMiddleware)
+
+@app.exception_handler(500)
+async def internalServerError(request, exc):
+    return JSONResponse(
+        status_code=500,
+        content={"success": False, "message": "Internal Server Error", "type": "unknown"},
+    )
+
+@app.exception_handler(405)
+async def methodNotAllowed(request, exc):
+    return JSONResponse(
+        status_code=405,
+        content={"success": False, "message": "Method Not Allowed", "type": "method_not_allowed"},
+    )
+
+@app.exception_handler(404)
+async def notFound(request, exc):
+    return JSONResponse(
+        status_code=404,
+        content={"success": False, "message": "Not Found", "type": "not_found"},
+    )
+
+exceptionHandlers = {
+    GlobalApiError: (status.HTTP_500_INTERNAL_SERVER_ERROR, "InternalServerError"),
+    BadRequest: (status.HTTP_400_BAD_REQUEST, "BadRequest"),
+    NotFound: (status.HTTP_404_NOT_FOUND, "NotFound"),
+    Unauthorized: (status.HTTP_401_UNAUTHORIZED, "Unauthorized"),
+    MethodNotAllowed: (status.HTTP_405_METHOD_NOT_ALLOWED, "MethodNotAllowed"),
+}
+
+for exc_class, (status_code, message) in exceptionHandlers.items():
+    app.add_exception_handler(
+        exc_class_or_status_code=exc_class,
+        handler=create_exception_handler(status_code, message),
+    )
+
 
 @app.get("/")
 async def root():

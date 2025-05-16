@@ -16,7 +16,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if self._is_protected(path):
             auth_header = request.headers.get("Authorization")
             if not auth_header or not auth_header.startswith("Bearer "):
-                return JSONResponse({"detail": "Cabeçalho de autorização ausente"}, status_code=401)
+                return JSONResponse({"success": False, "message": "Missing "}, status_code=401)
 
             token = auth_header.split(" ")[1]
             try:
