@@ -29,7 +29,7 @@ async def signup(request: Request):
         pass
 
 
-    await authTools.create_user(email, username, password)
+    await authTools.create_user(username, email, password)
     
     token = authTools.create_token(email)
     return {"token": token}
