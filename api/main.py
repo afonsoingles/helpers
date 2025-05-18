@@ -1,18 +1,21 @@
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
+import logging
 import api.errors.exceptions as exceptions
 from api.errors.handlers import create_exception_handler
 import api.routers.notifications
+import api.routers.accounts
 import api.middleware.auth
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, title="Helpers API", version="1.0.0")
 
 # Routers
 app.include_router(api.routers.notifications.router, prefix="/v1/notifications", tags=["Notifications"])
+app.include_router(api.routers.accounts.router, prefix="/v1/accounts", tags=["Accounts"])
 
 
-# Middlewares
-app.add_middleware(api.middleware.auth.AuthMiddleware)
+# Bcrypt - Ignore __about__ warning
+logging.getLogger('passlib').setLevel(logging.ERROR)
 
 @app.exception_handler(500)
 async def internalServerError(request, exc):

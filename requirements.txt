@@ -12,3 +12,5 @@ airtable
 pytz
 redis
 PyJWT
+passlib
+passlib[bcrypt]
