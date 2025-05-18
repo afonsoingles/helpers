@@ -116,9 +116,9 @@ async def sendNotification(request: Request):
             tokensList,
             json["title"],
             json["body"],
+            sound,
             data,
             ttl,
-            sound,
             isCritical,
         )
     else:
@@ -126,9 +126,9 @@ async def sendNotification(request: Request):
             json["deviceToken"],
             json["title"],
             json["body"],
+            sound,
             data,
             ttl,
-            sound,
             isCritical,
         )
 
