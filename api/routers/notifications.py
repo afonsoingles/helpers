@@ -102,6 +102,10 @@ async def sendNotification(request: Request):
     except:
         ttl = 1
 
+    try:
+        sound = json["sound"]
+    except:
+        sound = "default"
     if sendAll:
         allDevices = mongo.db.devices.find()
         tokensList = []
@@ -114,6 +118,7 @@ async def sendNotification(request: Request):
             json["body"],
             data,
             ttl,
+            sound,
             isCritical,
         )
     else:
@@ -123,6 +128,7 @@ async def sendNotification(request: Request):
             json["body"],
             data,
             ttl,
+            sound,
             isCritical,
         )
 
@@ -135,6 +141,7 @@ async def sendNotification(request: Request):
         {
             "title": json["title"],
             "body": json["body"],
+            "sound": sound,
             "data": data,
             "deviceToken": deviceToken,
             "isCritical": isCritical,
