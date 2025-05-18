@@ -5,7 +5,7 @@ import api.errors.exceptions as exceptions
 from api.errors.handlers import create_exception_handler
 import api.routers.notifications
 import api.routers.accounts
-import api.middleware.auth
+
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, title="Helpers API", version="1.0.0")
 

@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request
 import api.errors.exceptions as exceptions
 from api.utils.authTools import AuthenticationTools
-from api.utils.redis import redisClient
+from api.decorators.auth import authRequired
 
 
 router = APIRouter()
@@ -59,6 +59,7 @@ async def login(request: Request):
 
 
 @router.get("/me")
+@authRequired
 async def me(request: Request):
     return request.state.user
 
