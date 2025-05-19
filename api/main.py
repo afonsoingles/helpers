@@ -1,6 +1,7 @@
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 import logging
+from utils.github import GitHub
 import api.errors.exceptions as exceptions
 from api.errors.handlers import create_exception_handler
 import api.routers.notifications
@@ -16,6 +17,9 @@ app.include_router(api.routers.accounts.router, prefix="/v1/accounts", tags=["Ac
 
 # Bcrypt - Ignore __about__ warning
 logging.getLogger('passlib').setLevel(logging.ERROR)
+
+# libs
+github = GitHub()
 
 @app.exception_handler(500)
 async def internalServerError(request, exc):
@@ -58,3 +62,8 @@ for exc_class, (status_code, message) in exceptionHandlers.items():
 @app.get("/")
 async def root():
     return {"message": "hello world :)"}
+
+@app.get("/health")
+async def health():
+    
+    return {"success": True, "message": "OK", "commit": github.get_latest_commit()}
