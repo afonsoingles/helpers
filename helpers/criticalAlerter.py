@@ -36,7 +36,7 @@ class rulesUpdater(BaseHelper):
         print("[criticalPusher] Finished at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     def schedule(self):
-        
+        return
         schedule.every().day.at("08:57:00").do(self.run)
         schedule.every().day.at("09:09:00").do(self.run)
         schedule.every().day.at("09:23:00").do(self.run)
