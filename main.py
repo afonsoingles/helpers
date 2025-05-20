@@ -55,14 +55,13 @@ async def main():
     print(f"[STARTUP] Found {len(helpers)} helpers.")
     
 
-    await asyncio.gather(*(run_helper(helper) for helper in helpers))
     await asyncio.create_subprocess_exec(
         "python", "-m", "uvicorn", "api.main:app",
         "--host", "0.0.0.0",
         "--port", os.environ.get("API_PORT", "8000"),
         "--log-level", os.environ.get("API_LOG_LEVEL", "info")
     )
-
+    await asyncio.gather(*(run_helper(helper) for helper in helpers))
     print("[STARTUP] Startup done. Waiting for scheduled tasks...")
     while True:
         try:
