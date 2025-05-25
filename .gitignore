@@ -1,4 +1,4 @@
 .env
 __pycache__
-data
+data/rules.json
 venv
