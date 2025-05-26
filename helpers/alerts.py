@@ -14,7 +14,7 @@ class alerts(BaseHelper):
     def run(self):
         print("[alerts] Started at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-        fetchAlerts = requests.get("https://api-dev.fogos.pt/v2/incidents/active").json()
+        fetchAlerts = requests.get("https://api-dev.fogos.pt/v2/incidents/active?all=1").json()
         for incident in fetchAlerts.get("data", []):
             mongo.db.occurrences.update_one(
                 {"id": incident["id"]},
