@@ -23,24 +23,25 @@ class AuthenticationTools:
         except jwt.PyJWTError as e:
             raise exceptions.Unauthorized("Invalid or expired token", "invalid_token")
         
-    async def get_user(self, email: str):
-        cached = await redisClient.get(f"UserData:{email}")
-        if cached:
-            user = json.loads(cached)
-            if user.get("blocked"):
-                raise exceptions.Forbidden("User blocked", "user_blocked")
-            return user
+    async def get_user(self, email: str, ignore_cache: bool = False):
+        if not ignore_cache:
+            cached = await redisClient.get(f"UserData:{email}")
+            if cached:
+                user = json.loads(cached)
+                if user.get("blocked"):
+                    raise exceptions.Forbidden("User blocked", "user_blocked")
+                return user
 
         user = db.users.find_one({"email": email})
         if not user:
             raise exceptions.NotFound("User not found", "user_not_found")
 
         if user.get("blocked"):
-            await redisClient.set(f"userData:{email}", json.dumps({"blocked": True}), ex=600)
+            await redisClient.set(f"UserData:{email}", json.dumps({"blocked": True}), ex=600)
             raise exceptions.Forbidden("User blocked", "user_blocked")
         user.pop("_id", None)
         user.pop("password", None)
-        await redisClient.set(f"userData:{email}", json.dumps(user), ex=600)
+        await redisClient.set(f"UserData:{email}", json.dumps(user), ex=600)
         return user
 
     async def create_user(self, username: str, email: str, password: str):

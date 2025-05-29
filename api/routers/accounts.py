@@ -45,7 +45,7 @@ async def login(request: Request):
     if not email or not password:
         raise exceptions.BadRequest("Email and password are required", "missing_fields")
 
-    user = await authTools.get_user(email)
+    user = await authTools.get_user(email, ignore_cache=True)
     if not authTools.check_password(password, user["password"]):
         raise exceptions.BadRequest("Invalid password", "invalid_password")
 
