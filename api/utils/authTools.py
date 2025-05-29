@@ -44,6 +44,12 @@ class AuthenticationTools:
         await redisClient.set(f"UserData:{email}", json.dumps(user), ex=600)
         return user
 
+    async def get_raw_user(self, email: str):
+        user = db.users.find_one({"email": email})
+        if not user:
+            raise exceptions.NotFound("User not found", "user_not_found")
+        user.pop("_id", None)
+        return user
     async def create_user(self, username: str, email: str, password: str):
         
         user = {
