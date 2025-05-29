@@ -35,7 +35,15 @@ class alerts(BaseHelper):
                 }},
                 upsert=True
             )
+
+
         print(f"[alerts] Updated {len(fetchAlerts.get('data', []))} occurrences in the database")
+        closedOccurrences = mongo.db.occurrences.update_many(
+            {"id": {"$nin": list(incident["id"] for incident in fetchAlerts.get("data", []))}},
+            {"$set": {"status": "Terminada", "statusCode": 12}}
+        )
+        
+        print(f"[alerts] Closed {closedOccurrences.modified_count} occurrences in the database")
         print("[alerts] Finished at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     def schedule(self):
