@@ -20,7 +20,7 @@ class Pusher:
         except:
             return
     
-    def bulkPush(self, title, body, data, ttl, sound, isCritical=False):
+    def bulkPush(self, title, body, data, ttl, sound=None, isCritical=False):
         try:
             r = requests.post(f"{os.environ.get('API_URL')}/v1/notifications/send", headers={
                 "X-Secure-Key": os.environ.get("SECURE_KEY"),
