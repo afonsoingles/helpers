@@ -3,7 +3,7 @@ import os
 
 class Pusher:
 
-    def singlePush(self, to, title, body, data, ttl, sound, isCritical=False):
+    def singlePush(self, to, title, body, data, ttl, sound=None, isCritical=False):
         try:
             r = requests.post(f"{os.environ.get('API:URL')}/v1/notifications/send", headers={
                 "X-Secure-Key": os.environ.get("SECURE_KEY"),
