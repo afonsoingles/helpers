@@ -15,7 +15,7 @@ class alerts(BaseHelper):
     def __init__(self):
         super().__init__(run_at_start=True)
 
-    def _haversine(lat1, lon1, lat2, lon2):
+    def _haversine(self, lat1, lon1, lat2, lon2):
         R = 6371 * 1000
         dlat = radians(lat2 - lat1)
         dlon = radians(lon2 - lon1)
