@@ -3,7 +3,7 @@ import os
 
 class Pusher:
 
-    def singlePush(self, to, title, body, data, ttl, sound=None, isCritical=False):
+    def singlePush(self, to, title, body, data, ttl, sound=None, isCritical=False) -> dict:
         try:
             r = requests.post(f"{os.environ.get('API:URL')}/v1/notifications/send", headers={
                 "X-Secure-Key": os.environ.get("SECURE_KEY"),
@@ -17,10 +17,11 @@ class Pusher:
                 "sound": sound,
                 "isCritical": isCritical,
             })
+            return r.json()
         except:
             return
     
-    def bulkPush(self, title, body, data, ttl, sound=None, isCritical=False):
+    def bulkPush(self, title, body, data, ttl, sound=None, isCritical=False) -> dict:
         try:
             r = requests.post(f"{os.environ.get('API_URL')}/v1/notifications/send", headers={
                 "X-Secure-Key": os.environ.get("SECURE_KEY"),
@@ -34,5 +35,6 @@ class Pusher:
                 "sound": sound,
                 "isCritical": isCritical,
             })
+            return r.json()
         except:
             return
