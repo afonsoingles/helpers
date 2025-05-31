@@ -69,7 +69,7 @@ class alerts(BaseHelper):
 
         for occurrence in mongo.db.occurrences.find({"statusCode": {"$ne": 12}}):
             distance = self._haversine(occurrence["lat"], occurrence["lon"], user_lat, user_lon)
-            if distance <= 5000:  # 5km
+            if distance <= 2000:  # 2km
                 nearby_occurrences.append(occurrence)
         
 
