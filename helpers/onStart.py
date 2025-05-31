@@ -1,8 +1,13 @@
 from bases.helper import BaseHelper
+from utils.github import GitHub
+from utils.pusher import Pusher
 from datetime import datetime
 import os
 import requests
 import time
+
+gh = GitHub()
+pusher = Pusher()
 
 class onStart(BaseHelper):
     def __init__(self):
@@ -12,17 +17,15 @@ class onStart(BaseHelper):
         print("[onStart] Started at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
         time.sleep(15) # wait a bit, so the API can start
-        r = requests.post(f"{os.environ.get('API_URL')}/v1/notifications/send", headers={
-            "X-Secure-Key": os.environ.get("SECURE_KEY"),
-        }, json={
-            "title": "Nova versão!",
-            "body": "A API foi atualizada para o commit mais recente.",
-            "sendAll": True,
-            "isCritical": False,
-            "sound": "bing.wav"
-        })
+        pusher.bulkPush(
+            title="Helpers ON",
+            body=f"Os helpers foram iniciados com sucesso e estão a executar o commit {gh.get_latest_commit()}",
+            sound="bing.wav",
+            data={},
+            ttl=30
+        )
 
-        print(f"[onStart] Pushed notification. Output: {r.status_code} - {r.text}")
+        print(f"[onStart] Pushed notification")
 
 
 
