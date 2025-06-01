@@ -54,9 +54,9 @@ class busAlerts(BaseHelper):
             
 
             
+            currentTime = datetime.now()
 
-            busEstimatedArrival = datetime.fromtimestamp(nextBus["estimated_arrival_unix"]).astimezone(datetime.now().astimezone().tzinfo)
-            currentTime = datetime.now().astimezone()
+            busEstimatedArrival = datetime.fromtimestamp(nextBus["estimated_arrival_unix"])
             userReminder = user["userConfig"]["bus"]["reminderTime"]
             timeDiff = (busEstimatedArrival - currentTime).total_seconds()
             busScheduledArrival = datetime.fromtimestamp(nextBus["scheduled_arrival_unix"])
