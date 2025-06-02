@@ -1,5 +1,6 @@
 from bases.helper import BaseHelper
 from datetime import datetime
+from datetime import timedelta
 import os
 import requests
 import schedule
@@ -102,9 +103,11 @@ class busAlerts(BaseHelper):
                     alert_data["arrival_status"] = arrival_status
 
                     # todo: add user-based notifications
+
+                    hourConverted = (busEstimatedArrival + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
                     pusher.bulkPush(
                         title=f"O autocarro {nextBus['line_id']} irá chegar {"mais cedo" if alert_data["arrival_status"] == "earlier" else "mais tarde"}",
-                        body=f"O autocarro irá chegar à paragem às {busEstimatedArrival.strftime('%H:%M:%S')}.",
+                        body=f"O autocarro irá chegar à paragem às {hourConverted}.",
                         ttl=30,
                         data={}
                     )
@@ -114,9 +117,11 @@ class busAlerts(BaseHelper):
                     continue
 
             if timeDiff <= userReminder * 60:
+
+                hourConverted = (busEstimatedArrival + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
                 pusher.bulkPush(
                     title=f"Autocarro {nextBus['line_id']} a caminho",
-                    body=f"O autocarro irá chegar à paragem às {busEstimatedArrival.strftime('%H:%M:%S')}.",
+                    body=f"O autocarro irá chegar à paragem às {hourConverted}.",
                     ttl=30,
                     data={}
                 )
