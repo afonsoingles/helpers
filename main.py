@@ -54,7 +54,7 @@ async def main():
             asyncio.create_task(startup.run_helper(helper)) for helper in helpers
         ]
 
-        logger.info("[STARTUP] All helpers started successfully.")
+        logger.info("[STARTUP] Startup complete. Waiting for scheduled tasks...")
         while True:
             try:
                 schedule.run_pending()
