@@ -38,4 +38,13 @@ class Startup:
         except Exception as e:
             print(f"[ERROR] Error scheduling helper {helper.__class__.__name__}: {e}")
 
+    
+    def force_exit(self, logger, apiProcess):
+        logger.info("[SHUTDOWN] Killing all tasks...")
+        try:
+            if apiProcess:
+                apiProcess.kill()
+        except Exception as e:
+            logger.error(f"Failed to kill API process: {e}")
+        os._exit(1)
 
