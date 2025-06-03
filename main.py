@@ -14,18 +14,19 @@ startup = Startup()
 logger = Logger()
 gh = GitHub()
 
-sentry_sdk.init(
-    dsn=os.environ.get("SENTRY_DSN"),
-    send_default_pii=True,
-    _experiments={"enable_logs": True},
-    integrations=[
-        LoggingIntegration(),
-    ],
-    traces_sample_rate=1.0,
-    environment=os.environ.get("DB_ENV"),
-    enable_tracing=True,
-    release=gh.get_latest_commit(),
-)
+if os.environ.get("DB_ENV") == "production":
+    sentry_sdk.init(
+        dsn=os.environ.get("SENTRY_DSN"),
+        send_default_pii=True,
+        _experiments={"enable_logs": True},
+        integrations=[
+            LoggingIntegration(),
+        ],
+        traces_sample_rate=1.0,
+        environment=os.environ.get("DB_ENV"),
+        enable_tracing=True,
+        release=gh.get_latest_commit(),
+    )
 
 global apiProcess
 global runningHelpers
