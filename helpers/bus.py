@@ -104,7 +104,7 @@ class busAlerts(BaseHelper):
 
                     # todo: add user-based notifications
 
-                    hourConverted = (busEstimatedArrival + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
+                    hourConverted = (busEstimatedArrival + timedelta(hours=1)).strftime('%H:%M:%S')
                     pusher.bulkPush(
                         title=f"O autocarro {nextBus['line_id']} irá chegar {"mais cedo" if alert_data["arrival_status"] == "earlier" else "mais tarde"}",
                         body=f"O autocarro irá chegar à paragem às {hourConverted}.",
@@ -118,7 +118,7 @@ class busAlerts(BaseHelper):
 
             if timeDiff <= userReminder * 60:
 
-                hourConverted = (busEstimatedArrival + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
+                hourConverted = (busEstimatedArrival + timedelta(hours=1)).strftime('%H:%M:%S')
                 pusher.bulkPush(
                     title=f"Autocarro {nextBus['line_id']} a caminho",
                     body=f"O autocarro irá chegar à paragem às {hourConverted}.",
