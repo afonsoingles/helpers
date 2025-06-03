@@ -16,7 +16,10 @@ class busAlerts(BaseHelper):
 
     def run(self):
         print("[busAlerts] Started at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
+        if datetime.now().weekday() >= 5:
+            print("[busAlerts] Today is a weekend. Skipping execution.")
+            return
+        
         enabledBusUsers = mongo.db.users.find({"userConfig.bus.enabled": True, "blocked": False})
         for user in enabledBusUsers:
             print(f"[busAlerts] Processing user: {user['username']}")
