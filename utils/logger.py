@@ -24,7 +24,6 @@ class Logger:
 
         self.log_file.write(formatted + "\n")
         self.log_file.flush()
-
         match level:
             case "ERROR":
                 sentry_sdk.logger.error(message)
@@ -45,8 +44,10 @@ class Logger:
     def warn(self, message: str):
         self._write_log("WARN", message, Fore.YELLOW)
 
-    def error(self, message: str):
-        self._write_log("ERROR", message, Fore.RED)
+    def error(self, message, exception: Exception = None):
+
+        sentry_sdk.capture_exception(exception)
+        self._write_log("ERROR", message=f"{message}: {exception}", color=Fore.RED)
 
     def __del__(self):
         try:
