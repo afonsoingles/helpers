@@ -88,7 +88,7 @@ class busAlerts(BaseHelper):
                     continue
 
                 if nextBus.get("observed_arrival", None):
-                    observed_arrival = datetime.strptime(nextBus["observed_arrival"], '%Y-%m-%d %H:%M:%S')
+                    observed_arrival = datetime.fromtimestamp(nextBus["observed_arrival_unix"])
                     observed_difference = (busEstimatedArrival - observed_arrival).total_seconds() / 60
                     alert_data["observed_arrival"] = nextBus["observed_arrival"]
                     alert_data["observed_difference"] = observed_difference
@@ -98,7 +98,7 @@ class busAlerts(BaseHelper):
                     )
                     print(f"[busAlerts] Bus has arrived.")
                     continue
-                if previous_difference < 10:
+                if previous_difference < 15:
                     print(f"[busAlerts] Skipping alert for user {user['username']} as estimated arrival hasn't changed significantly.")
                     continue
                 else:
@@ -118,7 +118,7 @@ class busAlerts(BaseHelper):
                     mongo.db.busAlerts.insert_one(alert_data)
                     print(f"[busAlerts] Updated alert for user {user['username']} with new estimated arrival time.")
                     continue
-
+                
             if timeDiff <= userReminder * 60:
 
                 hourConverted = (busEstimatedArrival + timedelta(hours=1)).strftime('%H:%M:%S')
