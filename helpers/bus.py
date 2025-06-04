@@ -16,15 +16,16 @@ class busAlerts(BaseHelper):
 
     def run(self):
         print("[busAlerts] Started at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        if datetime.now().weekday() >= 5:
-            print("[busAlerts] Today is a weekend. Skipping execution.")
-            return
+
         
         enabledBusUsers = mongo.db.users.find({"userConfig.bus.enabled": True, "blocked": False})
         for user in enabledBusUsers:
             print(f"[busAlerts] Processing user: {user['username']}")
             realtimeData = requests.get(f"https://api.carrismetropolitana.pt/stops/{str(user['userConfig']['bus']['pickupStop'])}/realtime").json()
-
+            if (datetime.now().weekday() >= 5) and (user["userConfig"]["bus"]["weekendEnabled"] is False):
+                print(f"[busAlerts] User {user['username']} has weekend alerts disabled. Skipping.")
+                continue
+            
             nextBus = None
             for bus in realtimeData:
                 if str(bus["line_id"]) not in user["userConfig"]["bus"]["lines"]:
