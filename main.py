@@ -61,18 +61,18 @@ async def main():
 
     except KeyboardInterrupt as e:
         logger.info("[SHUTDOWN] Keyboard interrupt received.")
-        startup.force_exit(logger, apiProcess)
+        startup.force_exit(apiProcess)
     except Exception as e:
         logger.error("Error running startup process", e)
-        startup.force_exit(logger, apiProcess)
+        startup.force_exit(apiProcess)
     finally:
-        startup.force_exit(logger, apiProcess)
+        startup.force_exit(apiProcess)
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt as e:
         logger.error("[SHUTDOWN] Keyboard interrupt received.", e)
-        startup.force_exit(logger, apiProcess)
+        startup.force_exit(apiProcess)
     except Exception as e:
         logger.error("Error in main thread", e)
