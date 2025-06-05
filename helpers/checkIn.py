@@ -2,7 +2,7 @@ from bases.helper import BaseHelper
 from datetime import datetime
 import os
 import requests
-import time
+from main import logger
 import schedule
 
 class checkIn(BaseHelper):
@@ -10,17 +10,17 @@ class checkIn(BaseHelper):
         super().__init__(run_at_start=True)
 
     def run(self):
-        print("[checkIn] Started at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        logger.info(f"[checkIn] Started at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
 
         r = requests.get(os.environ.get("BETTER_STACK_HB"))
 
-        print(f"[checkIn] Heartbeat - {r.status_code}, response: {r.text}")
+        logger.info(f"[checkIn] Heartbeat - {r.status_code}, response: {r.text}")
 
 
 
 
 
-        print("[checkIn] Finished at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        logger.info(f"[checkIn] Finished at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
 
     def schedule(self):
        
