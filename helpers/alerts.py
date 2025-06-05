@@ -1,6 +1,6 @@
 from bases.helper import BaseHelper
 from datetime import datetime
-import os
+from main import logger
 import requests
 import schedule
 from math import radians, sin, cos, sqrt, atan2
@@ -24,7 +24,7 @@ class alerts(BaseHelper):
         return R * c
     
     def run(self):
-        print("[alerts] Started at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        logger.info(f"[alerts] Started at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
 
         fetchAlerts = requests.get("https://api-dev.fogos.pt/v2/incidents/active?all=1").json()
         for incident in fetchAlerts.get("data", []):
@@ -49,13 +49,13 @@ class alerts(BaseHelper):
             )
 
 
-        print(f"[alerts] Updated {len(fetchAlerts.get('data', []))} occurrences in the database")
+        logger.info(f"[alerts] Updated {len(fetchAlerts.get('data', []))} occurrences in the database")
         closedOccurrences = mongo.db.occurrences.update_many(
             {"id": {"$nin": list(incident["id"] for incident in fetchAlerts.get("data", []))}},
             {"$set": {"status": "Terminada", "statusCode": 12}}
         )
         
-        print(f"[alerts] Closed {closedOccurrences.modified_count} occurrences in the database")
+        logger.info(f"[alerts] Closed {closedOccurrences.modified_count} occurrences in the database")
 
         userLocation = getLocation()
 
@@ -92,9 +92,9 @@ class alerts(BaseHelper):
                     {"$set": {"alertSent": True}}
                 )
         else:
-            print("[alerts] No occurrences near the user.")
+            logger.info("[alerts] No occurrences near the user.")
 
-        print("[alerts] Finished at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        logger.info(f"[alerts] Finished at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
 
     def schedule(self):
         schedule.every(5).minutes.do(self.run)
