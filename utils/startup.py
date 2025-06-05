@@ -2,7 +2,9 @@ import os
 import importlib
 from bases.helper import BaseHelper
 import asyncio
-from main import logger
+import logging
+
+logger = logging.getLogger("main")
 
 class Startup:
 
