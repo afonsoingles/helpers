@@ -1,9 +1,8 @@
 from bases.helper import BaseHelper
 from utils.github import GitHub
+from main import logger
 from utils.pusher import Pusher
 from datetime import datetime
-import os
-import requests
 import time
 
 gh = GitHub()
@@ -14,7 +13,7 @@ class onStart(BaseHelper):
         super().__init__(run_at_start=True)
 
     def run(self):
-        print("[onStart] Started at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        logger.info(f"[onStart] Started at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
 
         time.sleep(15) # wait a bit, so the API can start
         pusher.bulkPush(
@@ -25,13 +24,13 @@ class onStart(BaseHelper):
             ttl=30
         )
 
-        print(f"[onStart] Pushed notification")
+        logger.info(f"[onStart] Pushed notification")
 
 
 
 
 
-        print("[onStart] Finished at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        logger.info(f"[onStart] Finished at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
 
     def schedule(self):
        
