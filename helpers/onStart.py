@@ -13,6 +13,7 @@ class onStart(BaseHelper):
         super().__init__(run_at_start=True)
 
     def run(self):
+        time.sleep(0.1)
         logger.info(f"[onStart] Started at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
 
         time.sleep(15) # wait a bit, so the API can start
