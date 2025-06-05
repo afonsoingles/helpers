@@ -3,6 +3,7 @@ from bases.helper import BaseHelper
 import schedule
 from datetime import datetime
 from utils.getWeatherData import getTodayForecast
+from main import logger
 from utils.getRules import getValidRules
 from utils.mailer import Mailer
 from utils.pusher import Pusher
@@ -14,21 +15,21 @@ pusher = Pusher()
 
 class Weathery(BaseHelper):
     def __init__(self):
-        super().__init__(run_at_start=False)
+        super().__init__(run_at_start=True)
 
     def run(self):
-        print("[Weathery] Started at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        logger.info(f"[Weathery] Started at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
         rules = getValidRules()
         
         for rule in rules:
 
             if rule.get("fields", {}).get("disableWeathery"):
-                print(f"[Weathery] Rule {rule.get("fields", {}).get("ruleNumber")} triggered: {rule.get("fields", {}).get("comment")} - Weathery disabled")
-                print("[Weathery] Finished at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                logger.info(f"[Weathery] Rule {rule.get("fields", {}).get("ruleNumber")} triggered: {rule.get("fields", {}).get("comment")} - Weathery disabled")
+                logger.info(f"[Weathery] Finished at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
                 return
         
         weatherForecast = getTodayForecast()
-        print(f"[Weathery] Obtained weather forecast")
+        logger.info(f"[Weathery] Obtained weather forecast")
 
         promptPusher = f"""Please write a push notification in Portuguese for Afonso.
         As it is a weather forecast, please include the temperature and the weather condition.
@@ -53,8 +54,8 @@ class Weathery(BaseHelper):
                 "helper": "weathery",
             },
         )
-        print(f"[Weathery] Pushed notification")
-        print("[Weathery] Finished at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        logger.info(f"[Weathery] Pushed notification")
+        logger.info(f"[Weathery] Finished at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
 
     def schedule(self):
         schedule.every().day.at(f"08:40:00", os.environ.get("TIMEZONE")).do(self.run)
