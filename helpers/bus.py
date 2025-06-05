@@ -1,11 +1,11 @@
 from bases.helper import BaseHelper
 from datetime import datetime
 from datetime import timedelta
-import os
 import requests
 import schedule
 from utils.mongoHandler import MongoHandler
 from utils.pusher import Pusher
+from main import logger
 
 mongo = MongoHandler()
 pusher = Pusher()
@@ -15,17 +15,17 @@ class busAlerts(BaseHelper):
         super().__init__(run_at_start=True)
 
     def run(self):
-        print("[busAlerts] Started at: ", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        logger.info(f"[busAlerts] Started at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
 
         
         enabledBusUsers = mongo.db.users.find({"userConfig.bus.enabled": True, "blocked": False})
         for user in enabledBusUsers:
-            print(f"[busAlerts] Processing user: {user['username']}")
+            logger.info(f"[busAlerts] Processing user: {user['username']}")
             realtimeData = requests.get(f"https://api.carrismetropolitana.pt/stops/{str(user['userConfig']['bus']['pickupStop'])}/realtime").json()
             if (datetime.now().weekday() >= 5) and (user["userConfig"]["bus"]["weekendEnabled"] is False):
-                print(f"[busAlerts] User {user['username']} has weekend alerts disabled. Skipping.")
+                logger.info(f"[busAlerts] User {user['username']} has weekend alerts disabled. Skipping.")
                 continue
-            
+
             nextBus = None
             for bus in realtimeData:
                 if str(bus["line_id"]) not in user["userConfig"]["bus"]["lines"]:
@@ -49,12 +49,12 @@ class busAlerts(BaseHelper):
 
             
             if not nextBus:
-                print(f"[busAlerts] No upcoming buses for user {user['username']}")
+                logger.info(f"[busAlerts] No upcoming buses for user {user['username']}")
                 continue
             
-            print(f"[busAlerts] Next bus found for user {user['username']}: ", nextBus["line_id"])
+            logger.info(f"[busAlerts] Next bus found for user {user['username']}: {nextBus["line_id"]}")
             if not nextBus.get("estimated_arrival_unix"):
-                print(f"[busAlerts] No estimated arrival time for user {user['username']}")
+                logger.info(f"[busAlerts] No estimated arrival time for user {user['username']}")
                 continue
             
 
@@ -97,10 +97,10 @@ class busAlerts(BaseHelper):
                         {"_id": existing_alert["_id"]},
                         {"$set": alert_data}
                     )
-                    print(f"[busAlerts] Bus has arrived.")
+                    logger.info(f"[busAlerts] Bus has arrived.")
                     continue
                 if previous_difference < 15:
-                    print(f"[busAlerts] Skipping alert for user {user['username']} as estimated arrival hasn't changed significantly.")
+                    logger.info(f"[busAlerts] Skipping alert for user {user['username']} as estimated arrival hasn't changed significantly.")
                     continue
                 else:
                     arrival_status = "earlier" if timeDiff < 0 else "later"
@@ -117,7 +117,7 @@ class busAlerts(BaseHelper):
                     )
 
                     mongo.db.busAlerts.insert_one(alert_data)
-                    print(f"[busAlerts] Updated alert for user {user['username']} with new estimated arrival time.")
+                    logger.info(f"[busAlerts] Updated alert for user {user['username']} with new estimated arrival time.")
                     continue
                 
             if timeDiff <= userReminder * 60:
@@ -131,7 +131,10 @@ class busAlerts(BaseHelper):
                 )
                 
                 mongo.db.busAlerts.insert_one(alert_data)
-                print(f"[busAlerts] Alert sent for user {user['username']} for bus {nextBus['line_id']} arriving at {busEstimatedArrival.strftime('%H:%M:%S')}.")
+                logger.info(f"[busAlerts] Alert sent for user {user['username']} for bus {nextBus['line_id']} arriving at {busEstimatedArrival.strftime('%H:%M:%S')}.")
+        
+        logger.info(f"[busAlerts] Finished at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
+
 
 
     def schedule(self):
