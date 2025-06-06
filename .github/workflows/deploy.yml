@@ -38,3 +38,13 @@ jobs:
           echo "Starting the service again"
           systemctl --user start ${{ secrets.SERVICE_NAME }}
           echo "Done!"
+    
+    - name: Release in Sentry
+      uses: getsentry/action-release@v3
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      with:
+        version: ${{ github.sha }}
+        environment: production
