@@ -21,7 +21,11 @@ class busAlerts(BaseHelper):
         enabledBusUsers = mongo.db.users.find({"userConfig.bus.enabled": True, "blocked": False})
         for user in enabledBusUsers:
             logger.info(f"[busAlerts] Processing user: {user['username']}")
-            realtimeData = requests.get(f"https://api.carrismetropolitana.pt/stops/{str(user['userConfig']['bus']['pickupStop'])}/realtime").json()
+            carrisData = requests.get(f"https://api.carrismetropolitana.pt/stops/{str(user['userConfig']['bus']['pickupStop'])}/realtime")
+            if carrisData.status_code != 200:
+                logger.warn(f"[busAlerts] Failed to get realtime data from Carris Metropolitana for user {user['username']}. Status code: {carrisData.status_code} // Response: {carrisData.text}")
+            
+            realtimeData = carrisData.json()
             if (datetime.now().weekday() >= 5) and (user["userConfig"]["bus"]["weekendEnabled"] is False):
                 logger.info(f"[busAlerts] User {user['username']} has weekend alerts disabled. Skipping.")
                 continue
