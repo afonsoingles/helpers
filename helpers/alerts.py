@@ -26,7 +26,7 @@ class alerts(BaseHelper):
     def run(self):
         logger.info(f"[alerts] Started at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
 
-        fetchAlerts = requests.get("https://api-dev.fogos.pt/v2/incidents/active?all=1").json()
+        fetchAlerts = requests.get("https://api-dev.fogos.pt/v2/incidents/active").json()
         for incident in fetchAlerts.get("data", []):
             mongo.db.occurrences.update_one(
                 {"id": incident["id"]},
@@ -77,7 +77,7 @@ class alerts(BaseHelper):
             for occurrence in nearby_occurrences:
                 if occurrence.get("alertSent", False) == True:
                     continue
-                body_message = f"Existe uma ocorrência de {occurrence['type']} perto de si. Estão envolvidos {occurrence['man']} operacionais"
+                body_message = f"Existe um incêndio perto de si. Estão envolvidos {occurrence['man']} operacionais"
                 if occurrence["air"] != 0:
                     body_message += f" e {occurrence['air']} meios aéreos"
                 
