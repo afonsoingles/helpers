@@ -46,5 +46,5 @@ jobs:
         SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
         SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
       with:
-        version: ${{ github.sha }}
+        release: ${{ github.sha }}
         environment: production
