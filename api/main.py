@@ -11,7 +11,7 @@ import api.routers.accounts
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, title="Helpers API", version="1.0.0")
 
 # Routers
-app.include_router(api.routers.notifications.router, prefix="/v1/notifications", tags=["Notifications"])
+app.include_router(api.routers.notifications.router, tags=["Notifications"])
 app.include_router(api.routers.accounts.router, prefix="/v1/accounts", tags=["Accounts"])
 
 
