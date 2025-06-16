@@ -12,7 +12,7 @@ app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, title="Helpers AP
 
 # Routers
 app.include_router(api.routers.notifications.router, tags=["Notifications"])
-app.include_router(api.routers.accounts.router, prefix="/v1/accounts", tags=["Accounts"])
+app.include_router(api.routers.accounts.router, tags=["Accounts"])
 
 
 # Bcrypt - Ignore __about__ warning
