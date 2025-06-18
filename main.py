@@ -23,6 +23,7 @@ if os.environ.get("DB_ENV") == "production":
             LoggingIntegration(),
         ],
         traces_sample_rate=1.0,
+        sample_rate=0.7,
         environment=os.environ.get("DB_ENV"),
         enable_tracing=True,
         release=gh.get_latest_commit(),
