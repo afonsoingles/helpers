@@ -15,7 +15,9 @@ class AuthenticationTools:
         self.secret = os.environ.get("JWT_SIGNING_KEY")
         self.algorithm = os.environ.get("ALGORITHM")
 
-
+    def create_token(self, email: str) -> str:
+        return jwt.encode({"sub": email}, self.secret, algorithm=self.algorithm)
+    
     async def decode_token(self, token: str) -> str:
         try:
             payload = jwt.decode(token, self.secret, algorithms=[self.algorithm])
@@ -44,12 +46,6 @@ class AuthenticationTools:
         await redisClient.set(f"UserData:{email}", json.dumps(user), ex=600)
         return user
 
-    async def get_raw_user(self, email: str):
-        user = db.users.find_one({"email": email})
-        if not user:
-            raise exceptions.NotFound("User not found", "user_not_found")
-        user.pop("_id", None)
-        return user
     async def create_user(self, username: str, email: str, password: str):
         
         user = {
@@ -74,5 +70,3 @@ class AuthenticationTools:
     async def invalidate_cache(self, email: str):
         await redisClient.delete(f"UserData:{email}")
     
-    def create_token(self, email: str) -> str:
-        return jwt.encode({"sub": email}, self.secret, algorithm=self.algorithm)

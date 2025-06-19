@@ -1,7 +1,10 @@
+import os
 from fastapi import APIRouter, Request
 import api.errors.exceptions as exceptions
 from api.utils.authTools import AuthenticationTools
 from api.decorators.auth import authRequired
+from datetime import datetime
+import pytz
 
 
 router = APIRouter()
@@ -38,3 +41,29 @@ async def login(request: Request):
 async def me(request: Request):
     return request.state.user
 
+
+@router.post("v2/accounts/signup")
+async def v2_signup(request: Request):
+    body = await request.json()
+
+    currentTime = datetime.now(pytz.timezone(os.environ.get("TIMEZONE")))
+
+    userData = {
+        "name": body.get("name"),
+        "username": body.get("username"),
+        "email": body.get("email"),
+        "passwordHash": authTools.hash_password(body.get("password")),
+        "status": "active",
+        "timezone": body.get("timezone", os.environ.get("TIMEZONE")),
+        "ip": request.client.host,
+        "pushConfiguration": [],
+        "services": [],
+        "createdAt": int(currentTime.timestamp()),
+        "updatedAt": int(currentTime.timestamp()),
+    }
+
+    if not userData["name"] or not userData["username"] or not userData["email"] or not userData["passwordHash"]:
+        raise exceptions.BadRequest("All fields are required", "missing_fields")
+    
+    if authTools.get_raw_user(userData["email"]):
+        
