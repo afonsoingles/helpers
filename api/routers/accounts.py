@@ -44,7 +44,10 @@ async def me(request: Request):
 
 @router.post("/v2/accounts/signup")
 async def v2_signup(request: Request):
-    body = await request.json()
+    try:
+        body = await request.json()
+    except:
+        raise exceptions.BadRequest("Invalid JSON data provided", "invalid_json")
 
     currentTime = datetime.now(pytz.timezone(os.environ.get("TIMEZONE")))
 
