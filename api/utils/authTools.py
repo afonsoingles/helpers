@@ -33,7 +33,7 @@ class AuthenticationTools:
         return pwdContext.verify(password, hashed)
     
     def hash_password(self, password: str) -> str:
-        return pwdContext.hash(password)
+        return None if password is None else pwdContext.hash(password)
 
     # User related
     async def get_user_by_email(self, email: str) -> dict:
