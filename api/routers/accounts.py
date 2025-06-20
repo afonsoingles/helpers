@@ -14,7 +14,7 @@ authTools = AuthenticationTools()
 
 
 
-@router.post("v1/accounts/login")
+@router.post("/v1/accounts/login")
 async def login(request: Request):
     body = await request.json()
     email = body.get("email")
@@ -36,13 +36,13 @@ async def login(request: Request):
 
 
 
-@router.get("v1/accounts/me")
+@router.get("/v1/accounts/me")
 @authRequired
 async def me(request: Request):
     return request.state.user
 
 
-@router.post("v2/accounts/signup")
+@router.post("/v2/accounts/signup")
 async def v2_signup(request: Request):
     body = await request.json()
 

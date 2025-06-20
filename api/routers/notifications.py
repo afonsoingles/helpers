@@ -12,7 +12,7 @@ router = APIRouter()
 pusher = InternalPusher()
 
 
-@router.post("v1/notifications/devices/add")
+@router.post("/v1/notifications/devices/add")
 async def addDevice(request: Request):
     json = await request.json()
 
@@ -32,7 +32,7 @@ async def addDevice(request: Request):
     return {"success": True, "message": "Device registered successfully"}
 
 
-@router.get("v1/notifications/devices")
+@router.get("/v1/notifications/devices")
 async def getDevices(request: Request):
     auth = request.headers.get("X-Secure-Key")
 
@@ -47,7 +47,7 @@ async def getDevices(request: Request):
     return devices
 
 
-@router.get("v1/notifications/history")
+@router.get("/v1/notifications/history")
 async def getNotificationHistory(request: Request):
 
     
@@ -73,7 +73,7 @@ async def getNotificationHistory(request: Request):
     return notifications
 
 
-@router.post("v1/notifications/send")
+@router.post("/v1/notifications/send")
 async def sendNotification(request: Request):
     auth = request.headers.get("X-Secure-Key")
     json = await request.json()
