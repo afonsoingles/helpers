@@ -36,44 +36,44 @@ class AuthenticationTools:
         return None if password is None else pwdContext.hash(password)
 
     # User related
-    async def get_user_by_email(self, email: str) -> dict:
+    def get_user_by_email(self, email: str) -> dict:
         lookupId = redisClient.get(f"lookup.users.byEmail:{email}")
-        cachedUser = await redisClient.get(f"userData:{lookupId}")
+        cachedUser = redisClient.get(f"userData:{lookupId}")
         if cachedUser:
             return json.loads(cachedUser)
         
-        user = await db.users.find_one({"email": email})
+        user = db.users.find_one({"email": email})
         if user:
             user.pop("_id", None)
             user.pop("passwordHash", None)
         
         return user if user else None
     
-    async def get_user_by_id(self, userId: str) -> dict:
-        cachedUser = await redisClient.get(f"userData:{userId}")
+    def get_user_by_id(self, userId: str) -> dict:
+        cachedUser = redisClient.get(f"userData:{userId}")
         if cachedUser:
             return json.loads(cachedUser)
         
-        user = await db.users.find_one({"id": userId})
+        user = db.users.find_one({"id": userId})
         if user:
             user.pop("_id", None)
             user.pop("passwordHash", None)
         
         return user if user else None
     
-    async def get_user_by_username(self, username: str) -> dict:
+    def get_user_by_username(self, username: str) -> dict:
         lookupId = redisClient.get(f"lookup.users.byUsername:{username}")
-        cachedUser = await redisClient.get(f"userData:{lookupId}")
+        cachedUser = redisClient.get(f"userData:{lookupId}")
         if cachedUser:
             return json.loads(cachedUser)
         
-        user = await db.users.find_one({"username": username})
+        user = db.users.find_one({"username": username})
         if user:
             user.pop("_id", None)
             user.pop("passwordHash", None)
         return user if user else None
     
-    async def create_user(self, userData: dict) -> dict:
+    def create_user(self, userData: dict) -> dict:
 
         userData["id"] = str(uuid.uuid4())
 
