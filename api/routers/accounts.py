@@ -55,7 +55,6 @@ async def v2_signup(request: Request):
         "passwordHash": authTools.hash_password(body.get("password")),
         "status": "active",
         "timezone": body.get("timezone", os.environ.get("TIMEZONE")),
-        "ip": request.client.host,
         "pushConfiguration": [],
         "services": [],
         "createdAt": int(currentTime.timestamp()),
@@ -65,5 +64,12 @@ async def v2_signup(request: Request):
     if not userData["name"] or not userData["username"] or not userData["email"] or not userData["passwordHash"]:
         raise exceptions.BadRequest("All fields are required", "missing_fields")
     
-    if authTools.get_raw_user(userData["email"]):
-        
+    if authTools.get_user_by_email(userData["email"]):
+        raise exceptions.BadRequest("This email is already registered", "email_taken")
+
+    if authTools.get_user_by_username(userData["username"]):
+        raise exceptions.BadRequest("This username is already taken", "username_taken")
+    
+    authTools.create_user(userData)
+    
+    return {"success": True, "message": "User created successfully. You can now log in."}
