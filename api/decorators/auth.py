@@ -35,7 +35,7 @@ def authRequired(func):
         token = auth_header.split(" ", 1)[1]
 
         email = await auth.decode_token(token)
-        user = await auth.get_user(email)
+        user = await auth.get_user_by_email(email)
         request.state.user = user
 
 
