@@ -36,7 +36,7 @@ class AuthenticationTools:
         return None if not password else pwdContext.hash(password)
 
     # User related
-    async def get_user_by_email(self, email: str, bypassCache: bool = False) -> dict:
+    async def get_user_by_email(self, email: str, bypassCache: bool = False, raw: bool = False) -> dict:
         if not bypassCache:
             lookupId = await redisClient.get(f"lookup.users.byEmail:{email}")
             cachedUser = await redisClient.get(f"userData:{lookupId}")
@@ -44,26 +44,28 @@ class AuthenticationTools:
                 return json.loads(cachedUser)
         
         user = db.users.find_one({"email": email})
-        if user:
-            user.pop("_id", None)
+        if user and not raw:
             user.pop("passwordHash", None)
         
+        user.pop("_id", None)
+
         return user if user else None
     
-    async def get_user_by_id(self, userId: str, bypassCache: bool = False) -> dict:
+    async def get_user_by_id(self, userId: str, bypassCache: bool = False, raw: bool = False) -> dict:
         if not bypassCache:
             cachedUser = await redisClient.get(f"userData:{userId}")
             if cachedUser:
                 return json.loads(cachedUser)
         
         user = db.users.find_one({"id": userId})
-        if user:
-            user.pop("_id", None)
+        if user and not raw:
             user.pop("passwordHash", None)
         
+        user.pop("_id", None)
+
         return user if user else None
     
-    async def get_user_by_username(self, username: str, bypassCache: bool = False) -> dict:
+    async def get_user_by_username(self, username: str, bypassCache: bool = False, raw: bool = False) -> dict:
         if not bypassCache:
             lookupId = await redisClient.get(f"lookup.users.byUsername:{username}")
             cachedUser = await redisClient.get(f"userData:{lookupId}")
@@ -71,9 +73,11 @@ class AuthenticationTools:
                 return json.loads(cachedUser)
         
         user = db.users.find_one({"username": username})
-        if user:
-            user.pop("_id", None)
+        if user and not raw:
             user.pop("passwordHash", None)
+        
+        user.pop("_id", None)
+        
         return user if user else None
     
     async def create_user(self, userData: dict) -> dict:
