@@ -33,12 +33,12 @@ class AuthenticationTools:
         return pwdContext.verify(password, hashed)
     
     def hash_password(self, password: str) -> str:
-        return None if password is None else pwdContext.hash(password)
+        return None if not password else pwdContext.hash(password)
 
     # User related
-    def get_user_by_email(self, email: str) -> dict:
-        lookupId = redisClient.get(f"lookup.users.byEmail:{email}")
-        cachedUser = redisClient.get(f"userData:{lookupId}")
+    async def get_user_by_email(self, email: str) -> dict:
+        lookupId = await redisClient.get(f"lookup.users.byEmail:{email}")
+        cachedUser = await redisClient.get(f"userData:{lookupId}")
         if cachedUser:
             return json.loads(cachedUser)
         
@@ -49,8 +49,8 @@ class AuthenticationTools:
         
         return user if user else None
     
-    def get_user_by_id(self, userId: str) -> dict:
-        cachedUser = redisClient.get(f"userData:{userId}")
+    async def get_user_by_id(self, userId: str) -> dict:
+        cachedUser = await redisClient.get(f"userData:{userId}")
         if cachedUser:
             return json.loads(cachedUser)
         
@@ -61,9 +61,9 @@ class AuthenticationTools:
         
         return user if user else None
     
-    def get_user_by_username(self, username: str) -> dict:
-        lookupId = redisClient.get(f"lookup.users.byUsername:{username}")
-        cachedUser = redisClient.get(f"userData:{lookupId}")
+    async def get_user_by_username(self, username: str) -> dict:
+        lookupId = await redisClient.get(f"lookup.users.byUsername:{username}")
+        cachedUser = await redisClient.get(f"userData:{lookupId}")
         if cachedUser:
             return json.loads(cachedUser)
         
@@ -73,14 +73,15 @@ class AuthenticationTools:
             user.pop("passwordHash", None)
         return user if user else None
     
-    def create_user(self, userData: dict) -> dict:
+    async def create_user(self, userData: dict) -> dict:
 
-        userData["id"] = str(uuid.uuid4())
+        userData = {"id": str(uuid.uuid4()), **userData}
 
         db.users.insert_one(userData)
 
+        userData.pop("_id", None)
         userData.pop("passwordHash", None)
         
-        redisClient.set(f"userData:{userData['id']}", json.dumps(userData))
-        redisClient.set(f"lookup.users.byEmail:{userData['email']}", userData['id'])
-        redisClient.set(f"lookup.users.byUsername:{userData['username']}", userData['id'])
+        await redisClient.set(f"userData:{userData['id']}", json.dumps(userData), ex=18000)
+        await redisClient.set(f"lookup.users.byEmail:{userData['email']}", userData['id'], ex=18000)
+        await redisClient.set(f"lookup.users.byUsername:{userData['username']}", userData['id'], ex=18000)
