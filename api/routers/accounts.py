@@ -13,7 +13,7 @@ authTools = AuthenticationTools()
 
 
 
-
+@router.get("/v2/accounts/me")
 @router.get("/v1/accounts/me")
 @authRequired
 async def me(request: Request):
