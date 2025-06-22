@@ -26,7 +26,7 @@ class AuthenticationTools:
             payload = jwt.decode(token, self.secret, algorithms=[self.algorithm])
             return payload.get("sub")
         except jwt.PyJWTError as e:
-            raise exceptions.Unauthorized("Invalid or expired token", "invalid_token")
+            raise exceptions.Unauthorized("Invalid authentication token", "invalid_token")
     
     # Password related
     def check_password(self, password: str, hashed: str) -> bool:

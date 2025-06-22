@@ -36,6 +36,11 @@ def authRequired(func):
 
         email = await auth.decode_token(token)
         user = await auth.get_user_by_email(email)
+        if not user:
+            raise exceptions.Unauthorized(
+                message="Invalid authentication token",
+                type="invalid_token"
+            )
         request.state.user = user
 
 
