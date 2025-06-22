@@ -13,14 +13,14 @@ authTools = AuthenticationTools()
 
 
 
-@router.get("/v2/accounts/me")
-@router.get("/v1/accounts/me")
+@router.get("/v2/accounts/me", status_code=200)
+@router.get("/v1/accounts/me", status_code=200)
 @authRequired
 async def me(request: Request):
     return request.state.user
 
 
-@router.post("/v2/accounts/signup")
+@router.post("/v2/accounts/signup", status_code=201)
 async def v2_signup(request: Request):
     try:
         body = await request.json()
@@ -57,7 +57,7 @@ async def v2_signup(request: Request):
     return {"success": True, "message": "User created successfully. You can now log in."}
 
 
-@router.post("/v2/accounts/login")
+@router.post("/v2/accounts/login", status_code=200)
 async def v2_login(request: Request):
     try:
         body = await request.json()
@@ -82,7 +82,7 @@ async def v2_login(request: Request):
     return {"success": True, "token": token}
 
 
-@router.delete("/v2/accounts/delete")
+@router.delete("/v2/accounts/delete", status_code=200)
 @authRequired
 async def v2_deleteAccount(request: Request):
 
