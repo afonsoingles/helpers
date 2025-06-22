@@ -47,9 +47,11 @@ class AuthenticationTools:
         if user and not raw:
             user.pop("passwordHash", None)
         
-        user.pop("_id", None)
-
-        return user if user else None
+        if user:
+            user.pop("_id", None)
+            return user
+        else:
+            return exceptions.NotFound("User not found", "user_not_found")
     
     async def get_user_by_id(self, userId: str, bypassCache: bool = False, raw: bool = False) -> dict:
         if not bypassCache:
@@ -61,9 +63,11 @@ class AuthenticationTools:
         if user and not raw:
             user.pop("passwordHash", None)
         
-        user.pop("_id", None)
-
-        return user if user else None
+        if user:
+            user.pop("_id", None)
+            return user
+        else:
+            return exceptions.NotFound("User not found", "user_not_found")
     
     async def get_user_by_username(self, username: str, bypassCache: bool = False, raw: bool = False) -> dict:
         if not bypassCache:
@@ -76,9 +80,11 @@ class AuthenticationTools:
         if user and not raw:
             user.pop("passwordHash", None)
         
-        user.pop("_id", None)
-        
-        return user if user else None
+        if user:
+            user.pop("_id", None)
+            return user
+        else:
+            return exceptions.NotFound("User not found", "user_not_found")
     
     async def create_user(self, userData: dict) -> dict:
 
@@ -92,3 +98,15 @@ class AuthenticationTools:
         await redisClient.set(f"userData:{userData['id']}", json.dumps(userData), ex=18000)
         await redisClient.set(f"lookup.users.byEmail:{userData['email']}", userData['id'], ex=18000)
         await redisClient.set(f"lookup.users.byUsername:{userData['username']}", userData['id'], ex=18000)
+
+    async def delete_user(self, user: str) -> None:
+        db.users.delete_one({"id": user["id"]})
+        await redisClient.delete(f"userData:{user["id"]}")
+        
+        lookupByEmail = await redisClient.get(f"lookup.users.byEmail:{user["email"]}")
+        if lookupByEmail:
+            await redisClient.delete(f"lookup.users.byEmail:{user["email"]}")
+        
+        lookupByUsername = await redisClient.get(f"lookup.users.byUsername:{user["username"]}")
+        if lookupByUsername:
+            await redisClient.delete(f"lookup.users.byUsername:{user["username"]}")
