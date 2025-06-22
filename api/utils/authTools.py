@@ -50,8 +50,7 @@ class AuthenticationTools:
         if user:
             user.pop("_id", None)
             return user
-        else:
-            return exceptions.NotFound("User not found", "user_not_found")
+
     
     async def get_user_by_id(self, userId: str, bypassCache: bool = False, raw: bool = False) -> dict:
         if not bypassCache:
@@ -66,9 +65,7 @@ class AuthenticationTools:
         if user:
             user.pop("_id", None)
             return user
-        else:
-            return exceptions.NotFound("User not found", "user_not_found")
-    
+
     async def get_user_by_username(self, username: str, bypassCache: bool = False, raw: bool = False) -> dict:
         if not bypassCache:
             lookupId = await redisClient.get(f"lookup.users.byUsername:{username}")
@@ -83,8 +80,7 @@ class AuthenticationTools:
         if user:
             user.pop("_id", None)
             return user
-        else:
-            return exceptions.NotFound("User not found", "user_not_found")
+
     
     async def create_user(self, userData: dict) -> dict:
 
