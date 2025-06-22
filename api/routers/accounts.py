@@ -80,3 +80,12 @@ async def v2_login(request: Request):
 
     token = authTools.create_token(email)
     return {"success": True, "token": token}
+
+
+@router.delete("/v2/accounts/delete")
+@authRequired
+async def v2_deleteAccount(request: Request):
+
+    await authTools.delete_user(request.state.user)
+    
+    return {"success": True, "message": "Account deleted successfully"}
