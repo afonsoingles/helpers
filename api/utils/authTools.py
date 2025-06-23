@@ -107,7 +107,7 @@ class AuthenticationTools:
             await redisClient.delete(f"lookup.users.byUsername:{user["username"]}")
     
     async def update_user(self, userId, data: dict) -> None:
-        self.delete_user_cache(userId)
+        await self.delete_user_cache(userId)
         db.users.update_one({"id": userId}, {"$set": data})
         await redisClient.set(f"userData:{userId}", json.dumps(data), ex=18000)
         await redisClient.set(f"lookup.users.byEmail:{data["email"]}", userId, ex=18000)
