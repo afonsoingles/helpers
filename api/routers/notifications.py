@@ -1,15 +1,20 @@
 from fastapi import APIRouter, Request
 from api.utils.pusher import InternalPusher
 from utils.mongoHandler import MongoHandler
+from api.utils.authTools import AuthenticationTools
+from api.decorators.auth import authRequired
 import api.errors.exceptions as exceptions
 import datetime
 import os
+import uuid
+import pytz
 
 
 
 mongo = MongoHandler()
 router = APIRouter()
 pusher = InternalPusher()
+authTools = AuthenticationTools()
 
 
 @router.post("/v1/notifications/devices/add")
@@ -152,3 +157,32 @@ async def sendNotification(request: Request):
     return {"success": True, "message": "Notification sent successfully"}
 
 
+# Version 2
+@router.post("/v2/notifications/devices")
+@authRequired
+async def v2_addDevice(request: Request):
+    try:
+        json = await request.json()
+    except:
+        raise exceptions.BadRequest(message="Invalid JSON data provided", type="invalid_json")
+    
+    deviceData = {
+        "deviceId": str(uuid.uuid4()),
+        "deviceName": json.get("name"),
+        "pushToken": json.get("pushToken"),
+        "allowCritical": json.get("allowsCritical", False),
+        "platform": json.get("platform", "unknown"),
+        "lastSeenAt": datetime.datetime.now(pytz.timezone(os.environ.get("TZ", "UTC"))).timestamp()
+    }
+
+    if not deviceData["pushToken"] or not deviceData["deviceName"]:
+        raise exceptions.BadRequest(message="pushToken and name are required", type="missing_fields")
+    
+    for registeredDevice in request.state.user.get("pushConfiguration", []):
+        if registeredDevice["deviceName"] == deviceData["deviceName"] or registeredDevice["pushToken"] == deviceData["pushToken"]:
+            raise exceptions.BadRequest(message="Device with the same name or pushToken already exists", type="duplicate_device")
+
+    request.state.user["pushConfiguration"].append(deviceData)
+    await authTools.update_user(request.state.user["id"], request.state.user)
+
+    return {"success": True, "message": "Device registered successfully. Device is now able to receive push notifications", "deviceId": str(deviceData["deviceId"])}

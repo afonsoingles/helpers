@@ -51,7 +51,6 @@ class AuthenticationTools:
             user.pop("_id", None)
             return user
 
-    
     async def get_user_by_id(self, userId: str, bypassCache: bool = False, raw: bool = False) -> dict:
         if not bypassCache:
             cachedUser = await redisClient.get(f"userData:{userId}")
@@ -99,6 +98,27 @@ class AuthenticationTools:
         db.users.delete_one({"id": user["id"]})
         await redisClient.delete(f"userData:{user["id"]}")
         
+        lookupByEmail = await redisClient.get(f"lookup.users.byEmail:{user["email"]}")
+        if lookupByEmail:
+            await redisClient.delete(f"lookup.users.byEmail:{user["email"]}")
+        
+        lookupByUsername = await redisClient.get(f"lookup.users.byUsername:{user["username"]}")
+        if lookupByUsername:
+            await redisClient.delete(f"lookup.users.byUsername:{user["username"]}")
+    
+    async def update_user(self, userId, data: dict) -> None:
+        self.delete_user_cache(userId)
+        db.users.update_one({"id": userId}, {"$set": data})
+        await redisClient.set(f"userData:{userId}", json.dumps(data), ex=18000)
+        await redisClient.set(f"lookup.users.byEmail:{data["email"]}", userId, ex=18000)
+        await redisClient.set(f"lookup.users.byUsername:{data["username"]}", userId, ex=18000)
+    
+    async def delete_user_cache(self, userId: str) -> None:
+        user = self.get_user_by_id(userId)
+        if not user:
+            return
+        
+        await redisClient.delete(f"userData:{userId}")
         lookupByEmail = await redisClient.get(f"lookup.users.byEmail:{user["email"]}")
         if lookupByEmail:
             await redisClient.delete(f"lookup.users.byEmail:{user["email"]}")
