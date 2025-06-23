@@ -70,6 +70,3 @@ async def health():
     
     return {"success": True, "message": "OK", "commit": github.get_latest_commit()}
 
-@app.get("/debug")
-async def debug():
-    return 1/0
