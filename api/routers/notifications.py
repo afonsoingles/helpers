@@ -186,3 +186,34 @@ async def v2_addDevice(request: Request):
     await authTools.update_user(request.state.user["id"], request.state.user)
 
     return {"success": True, "message": "The device was registered successfully and is now able to receive push notifications.", "deviceId": str(deviceData["deviceId"])}
+
+
+@router.put("/v2/notifications/devices/{deviceId}")
+@authRequired
+async def v2_updateDevice(request: Request, deviceId: str):
+    try:
+        json = await request.json()
+    except:
+        raise exceptions.BadRequest(message="Invalid JSON data provided", type="invalid_json")
+    
+    deviceData = {
+        "deviceName": json.get("name"),
+        "pushToken": json.get("pushToken"),
+        "allowCritical": json.get("allowsCritical", False),
+        "platform": json.get("platform", "unknown"),
+        "lastSeenAt": datetime.datetime.now(pytz.timezone(os.environ.get("TZ", "UTC"))).timestamp()
+    }
+
+    if not deviceData["pushToken"] or not deviceData["deviceName"]:
+        raise exceptions.BadRequest(message="pushToken and name are required", type="missing_fields")
+    
+    for registeredDevice in request.state.user.get("pushConfiguration", []):
+        if registeredDevice["deviceId"] == deviceId:
+            request.state.user["pushConfiguration"] = [
+                device if device["deviceId"] != deviceId else {**device, **deviceData}
+                for device in request.state.user["pushConfiguration"]
+            ]
+            await authTools.update_user(request.state.user["id"], request.state.user)
+            return {"success": True, "message": "The device was updated successfully."}
+    
+    raise exceptions.NotFound(message="Device not found", type="device_not_found")
