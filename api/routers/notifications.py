@@ -185,4 +185,4 @@ async def v2_addDevice(request: Request):
     request.state.user["pushConfiguration"].append(deviceData)
     await authTools.update_user(request.state.user["id"], request.state.user)
 
-    return {"success": True, "message": "Device registered successfully. Device is now able to receive push notifications", "deviceId": str(deviceData["deviceId"])}
+    return {"success": True, "message": "The device was registered successfully and is now able to receive push notifications.", "deviceId": str(deviceData["deviceId"])}
