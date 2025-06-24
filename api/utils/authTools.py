@@ -114,7 +114,7 @@ class AuthenticationTools:
         await redisClient.set(f"lookup.users.byUsername:{data["username"]}", userId, ex=18000)
     
     async def delete_user_cache(self, userId: str) -> None:
-        user = self.get_user_by_id(userId)
+        user = await self.get_user_by_id(userId)
         if not user:
             return
         
