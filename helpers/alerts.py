@@ -82,7 +82,7 @@ class alerts(BaseHelper):
                     body_message += f" e {occurrence['air']} meios aéreos"
                 
                 pusher.bulkPush(
-                    title="🚨 Ocorrência perto de si",
+                    title="🚨 Incêndio perto de si",
                     body=body_message,
                     ttl=30,
                     data={},
