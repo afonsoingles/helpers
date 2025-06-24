@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 import logging
 from utils.github import GitHub
 import api.errors.exceptions as exceptions
+from main import logger
 from api.errors.handlers import create_exception_handler
 import api.routers.notifications
 import api.routers.accounts
@@ -11,8 +12,8 @@ import api.routers.accounts
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, title="Helpers API", version="1.0.0")
 
 # Routers
-app.include_router(api.routers.notifications.router, prefix="/v1/notifications", tags=["Notifications"])
-app.include_router(api.routers.accounts.router, prefix="/v1/accounts", tags=["Accounts"])
+app.include_router(api.routers.notifications.router, tags=["Notifications"])
+app.include_router(api.routers.accounts.router, tags=["Accounts"])
 
 
 # Bcrypt - Ignore __about__ warning
@@ -23,13 +24,14 @@ github = GitHub()
 
 @app.exception_handler(500)
 async def internalServerError(request, exc):
+    logger.error("[API] Internal Server Error", exc)
     return JSONResponse(
         status_code=500,
         content={"success": False, "message": "Internal Server Error", "type": "unknown"},
     )
 
 @app.exception_handler(405)
-async def methodNotAllowed(request, exc):
+async def methodNotAllowed(request, exc: Exception):
     return JSONResponse(
         status_code=405,
         content={"success": False, "message": "Method Not Allowed", "type": "method_not_allowed"},
@@ -67,3 +69,4 @@ async def root():
 async def health():
     
     return {"success": True, "message": "OK", "commit": github.get_latest_commit()}
+

@@ -16,3 +16,4 @@ passlib
 passlib[bcrypt]
 sentry-sdk
 colorama
+uuid

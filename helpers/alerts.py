@@ -86,6 +86,7 @@ class alerts(BaseHelper):
                     body=body_message,
                     ttl=30,
                     data={},
+                    isCritical=True,
                 )
                 mongo.db.occurrences.update_one(
                     {"id": occurrence["id"]},
