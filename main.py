@@ -23,7 +23,7 @@ if os.environ.get("DB_ENV") == "production":
             LoggingIntegration(),
         ],
         traces_sample_rate=1.0,
-        sample_rate=0.7,
+        sample_rate=0.5,
         environment=os.environ.get("DB_ENV"),
         enable_tracing=True,
         release=gh.get_latest_commit(),
@@ -46,7 +46,8 @@ async def main():
             "python", "-m", "uvicorn", "api.main:app",
             "--host", "0.0.0.0",
             "--port", os.environ.get("API_PORT", "8000"),
-            "--log-level", os.environ.get("API_LOG_LEVEL", "info")
+            "--log-level", os.environ.get("API_LOG_LEVEL", "info"),
+            "--limit-concurrency", os.environ.get("API_LIMIT_CONCURRENCY", "500"),
         )
 
         runningHelpers = [
