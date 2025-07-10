@@ -22,7 +22,7 @@ if os.environ.get("DB_ENV") == "production":
         integrations=[
             LoggingIntegration(),
         ],
-        traces_sample_rate=1.0,
+        traces_sample_rate=0.5,
         sample_rate=0.5,
         environment=os.environ.get("DB_ENV"),
         enable_tracing=True,
