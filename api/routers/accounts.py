@@ -85,6 +85,20 @@ async def v2_login(request: Request):
 @router.delete("/v2/accounts/delete", status_code=200)
 @authRequired
 async def v2_deleteAccount(request: Request):
+    try:
+        body = await request.json()
+    except:
+        raise exceptions.BadRequest("Invalid JSON data provided", "invalid_json")
+
+    password = body.get("password")
+
+    if not password:
+        raise exceptions.BadRequest("Password is required", "missing_fields")
+
+    rawUser = await authTools.get_user_by_email(request.state.user["email"], bypassCache=True, raw=True)
+
+    if not authTools.check_password(password, rawUser["passwordHash"]):
+        raise exceptions.BadRequest("Invalid password", "invalid_password")
 
     await authTools.delete_user(request.state.user)
     
