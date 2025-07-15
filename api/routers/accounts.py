@@ -15,7 +15,7 @@ authTools = AuthenticationTools()
 
 @router.get("/v2/accounts/me", status_code=200)
 @router.get("/v1/accounts/me", status_code=200)
-@authRequired
+@authRequired(allowBanned=True)
 async def me(request: Request):
     return request.state.user
 

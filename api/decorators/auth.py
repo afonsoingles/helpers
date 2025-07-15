@@ -9,7 +9,7 @@ import api.errors.exceptions as exceptions
 auth = AuthenticationTools()
 
 
-def authRequired(func=None, *, admin: bool = False):
+def authRequired(func=None, *, admin: bool = False, allowBanned: bool = False):
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -40,7 +40,7 @@ def authRequired(func=None, *, admin: bool = False):
                     type="invalid_token"
                 )
             
-            if user.get("status") == "suspended":
+            if user.get("status") == "suspended" and not allowBanned:
                 raise exceptions.Forbidden(
                     message="User account is suspended",
                     type="account_blocked"
