@@ -103,3 +103,95 @@ async def v2_deleteAccount(request: Request):
     await authTools.delete_user(request.state.user)
     
     return {"success": True, "message": "Account deleted successfully"}
+
+
+# Admin account management
+
+@router.get("/v2/admin/users", status_code=200)
+@authRequired(admin=True)
+async def v2_admin_listUsers(request: Request, page: int = 1, limit: int = 10, search: str = None):
+
+    users = await authTools.get_paginated_users(page=page, limit=limit, search=search)
+    return {"success": True, "users": users}
+
+
+@router.get("/v2/users/{userId}", status_code=200)
+@authRequired(admin=True)
+async def v2_admin_getUser(request: Request, userId: str):
+    user = await authTools.get_user_by_id(userId)
+    if not user:
+        raise exceptions.NotFound("User not found", "user_not_found")
+    return {"success": True, "user": user}
+
+
+@router.put("/users/{userId}", status_code=200)
+@authRequired(admin=True)
+async def v2_admin_editUser(request: Request, userId: str):
+    try:
+        body = await request.json()
+    except:
+        raise exceptions.BadRequest("Invalid JSON data provided", "invalid_json")
+
+    existing_user = await authTools.get_user_by_id(userId)
+    if not existing_user:
+        raise exceptions.NotFound("User not found", "user_not_found")
+
+    updated_data = {**existing_user, **{k: v for k, v in body.items() if v is not None}}
+
+    updated_user = await authTools.update_user(userId, updated_data)
+
+    return {"success": True, "message": "User details updated successfully", "user": updated_user}
+
+
+@router.post("/users/{userId}/block", status_code=200)
+@authRequired(admin=True)
+async def v2_admin_blockUser(request: Request, userId: str):
+    try:
+        body = await request.json()
+    except:
+        raise exceptions.BadRequest("Invalid JSON data provided", "invalid_json")
+
+    reason = body.get("reason")
+    if not reason:
+        raise exceptions.BadRequest("Reason is required", "missing_reason")
+
+    blocked_user = await authTools.block_user(userId, reason)
+    if not blocked_user:
+        raise exceptions.NotFound("User not found", "user_not_found")
+    return {"success": True, "message": "User blocked successfully", "user": blocked_user}
+
+
+@router.post("/users/{userId}/unblock", status_code=200)
+@authRequired(admin=True)
+async def v2_admin_unblockUser(request: Request, userId: str):
+    try:
+        body = await request.json()
+    except:
+        raise exceptions.BadRequest("Invalid JSON data provided", "invalid_json")
+
+    reason = body.get("reason")
+    if not reason:
+        raise exceptions.BadRequest("Reason is required", "missing_reason")
+
+    unblocked_user = await authTools.unblock_user(userId, reason)
+    if not unblocked_user:
+        raise exceptions.NotFound("User not found", "user_not_found")
+    return {"success": True, "message": "User unblocked successfully", "user": unblocked_user}
+
+
+@router.post("/users/{user_id}/reset-password", status_code=200)
+@authRequired(admin=True)
+async def v2_resetPassword(request: Request, user_id: str):
+    try:
+        body = await request.json()
+    except:
+        raise exceptions.BadRequest("Invalid JSON data provided", "invalid_json")
+
+    new_password = body.get("new_password")
+    if not new_password:
+        raise exceptions.BadRequest("New password is required", "missing_password")
+
+    updated_user = await authTools.reset_password(user_id, new_password)
+    if not updated_user:
+        raise exceptions.NotFound("User not found", "user_not_found")
+    return {"success": True, "message": "Password reset successfully", "user": updated_user}

@@ -111,7 +111,7 @@ class AuthenticationTools:
         db.users.update_one({"id": userId}, {"$set": data})
         await redisClient.set(f"userData:{userId}", json.dumps(data), ex=18000)
         await redisClient.set(f"lookup.users.byEmail:{data["email"]}", userId, ex=18000)
-        await redisClient.set(f"lookup.users.byUsername:{data["username"]}", userId, ex=18000)
+        await redisClient.set(f"lookup.users.byUsername:{data["username"]}", userId, ex=18000) 
     
     async def delete_user_cache(self, userId: str) -> None:
         user = await self.get_user_by_id(userId)
@@ -126,3 +126,57 @@ class AuthenticationTools:
         lookupByUsername = await redisClient.get(f"lookup.users.byUsername:{user["username"]}")
         if lookupByUsername:
             await redisClient.delete(f"lookup.users.byUsername:{user["username"]}")
+    
+    async def get_paginated_users(self, page: int = 1, limit: int = 10, search: str = None) -> list:
+        query = {}
+        if search:
+            query = {
+                "$or": [
+                    {"name": {"$regex": search, "$options": "i"}},
+                    {"email": {"$regex": search, "$options": "i"}},
+                    {"username": {"$regex": search, "$options": "i"}}
+                ]
+            }
+        
+        users = list(db.users.find(query).skip((page - 1) * limit).limit(limit))
+        for user in users:
+            user.pop("_id", None)
+            user.pop("passwordHash", None)
+        
+        return users
+    
+    async def block_user(self, userId: str, reason: str) -> dict:
+        user = await self.get_user_by_id(userId)
+        if not user:
+            raise exceptions.NotFound("User not found", "user_not_found")
+        
+
+        user["status"] = "suspended"
+        if not user.get("moderationReason"):
+            user["moderationReason"] = None
+        user["moderationReason"] = reason
+        await self.update_user(userId, user)
+        
+        return user
+    
+    async def unblock_user(self, userId: str, reason) -> dict:
+        user = await self.get_user_by_id(userId)
+        if not user:
+            raise exceptions.NotFound("User not found", "user_not_found")
+        
+        user["status"] = "active"
+        user["moderationReason"] = reason
+        await self.update_user(userId, user)
+        
+        return user
+    
+    async def reset_password(self, userId: str, newPassword: str) -> dict:
+        user = await self.get_user_by_id(userId)
+        if not user:
+            raise exceptions.NotFound("User not found", "user_not_found")
+        
+        hashedPassword = self.hash_password(newPassword)
+        user["passwordHash"] = hashedPassword
+        await self.update_user(userId, user)
+        
+        return user
