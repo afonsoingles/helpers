@@ -5,11 +5,21 @@ from utils.github import GitHub
 import api.errors.exceptions as exceptions
 from main import logger
 from api.errors.handlers import create_exception_handler
+from fastapi.middleware.cors import CORSMiddleware
 import api.routers.notifications
 import api.routers.accounts
 
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, title="Helpers API", version="1.0.0")
+
+# Allow CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Routers
 app.include_router(api.routers.notifications.router, tags=["Notifications"])
