@@ -217,3 +217,15 @@ async def v2_updateDevice(request: Request, deviceId: str):
             return {"success": True, "message": "The device was updated successfully."}
     
     raise exceptions.NotFound(message="Device not found", type="device_not_found")
+
+
+@router.post("/v2/notifications/devices/{deviceId}/checkIn")
+@authRequired
+async def v2_checkInDevice(request: Request, deviceId: str):
+    for registeredDevice in request.state.user.get("pushConfiguration", []):
+        if registeredDevice["deviceId"] == deviceId:
+            registeredDevice["lastSeenAt"] = datetime.datetime.now(pytz.timezone(os.environ.get("TZ", "UTC"))).timestamp()
+            await authTools.update_user(request.state.user["id"], request.state.user)
+            return {"success": True, "message": "Device is alive!"}
+    
+    raise exceptions.NotFound(message="Device not found", type="device_not_found")
