@@ -6,6 +6,7 @@ import uuid
 import os
 import json
 import jwt
+import datetime
 
 db = MongoHandler().db
 pwdContext = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -108,6 +109,7 @@ class AuthenticationTools:
     
     async def update_user(self, userId, data: dict) -> None:
         await self.delete_user_cache(userId)
+        data["updatedAt"] = datetime.datetime.now(datetime.timezone.utc)
         db.users.update_one({"id": userId}, {"$set": data})
         await redisClient.set(f"userData:{userId}", json.dumps(data), ex=18000)
         await redisClient.set(f"lookup.users.byEmail:{data["email"]}", userId, ex=18000)
