@@ -179,9 +179,9 @@ async def v2_admin_unblockUser(request: Request, userId: str):
     return {"success": True, "message": "User unblocked successfully", "user": unblocked_user}
 
 
-@router.post("/users/{user_id}/reset-password", status_code=200)
+@router.post("/users/{userId}/reset-password", status_code=200)
 @authRequired(admin=True)
-async def v2_resetPassword(request: Request, user_id: str):
+async def v2_resetPassword(request: Request, userId: str):
     try:
         body = await request.json()
     except:
@@ -191,7 +191,7 @@ async def v2_resetPassword(request: Request, user_id: str):
     if not new_password:
         raise exceptions.BadRequest("New password is required", "missing_password")
 
-    updated_user = await authTools.reset_password(user_id, new_password)
+    updated_user = await authTools.reset_password(userId, new_password)
     if not updated_user:
         raise exceptions.NotFound("User not found", "user_not_found")
     return {"success": True, "message": "Password reset successfully", "user": updated_user}
