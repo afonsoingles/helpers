@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request
 from api.utils.pusher import InternalPusher
 from utils.mongoHandler import MongoHandler
 from api.utils.authTools import AuthenticationTools
+from api.utils.notificationTools import NotificationTools
 from api.decorators.auth import authRequired
 import api.errors.exceptions as exceptions
 import datetime
@@ -15,6 +16,7 @@ mongo = MongoHandler()
 router = APIRouter()
 pusher = InternalPusher()
 authTools = AuthenticationTools()
+notificationTools = NotificationTools()
 
 
 @router.post("/v1/notifications/devices/add")
@@ -229,3 +231,22 @@ async def v2_checkInDevice(request: Request, deviceId: str):
             return {"success": True, "message": "Device is alive!"}
     
     raise exceptions.NotFound(message="Device not found", type="device_not_found")
+
+
+@router.get("/v2/notifications")
+@authRequired
+async def v2_getNotifications(request: Request, page: int = 1, limit: int = 20):
+    try:
+        int(request.query_params.get("page", 1))
+        int(request.query_params.get("limit", 20))
+    except:
+        raise exceptions.BadRequest(message="Invalid pagination parameters", type="invalid_pagination")
+
+    if page < 1 or limit < 1:
+        raise exceptions.BadRequest(message="Page and limit must be positive integers", type="invalid_pagination")
+
+    
+
+    notificationsList = await notificationTools.get_paginated_user_notifications(request.state.user["id"], page, limit)
+
+    return {"success": True, "notifications": notificationsList}
