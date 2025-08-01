@@ -250,3 +250,78 @@ async def v2_getNotifications(request: Request, page: int = 1, limit: int = 20):
     notificationsList = await notificationTools.get_paginated_user_notifications(request.state.user["id"], page, limit)
 
     return {"success": True, "notifications": notificationsList}
+
+
+@router.post("/v2/notifications/send") # admin endpoint - authenticates with server secure key
+async def v2_sendNotification(request: Request):
+    secureKey = request.headers.get("X-Secure-Key")
+    json = await request.json()
+
+    if secureKey != os.environ.get("SECURE_KEY"):
+        raise exceptions.Unauthorized(message="Invalid secure key", type="invalid_key")
+    
+    if not json.get("title") or not json.get("body") or not json.get("to") or not json.get("from"):
+        raise exceptions.BadRequest(message="Missing required parameters", type="missing_fields")
+    
+    if json["to"] == "broadcast":
+        allTokens = await authTools.get_all_push_tokens()
+        pusher.bulk_push(
+            allTokens,
+            json["title"],
+            json["body"],
+            json.get("sound", "default"),
+            json.get("data", {}),
+            json.get("ttl", 1),
+            json.get("isCritical", False),
+        )
+        await notificationTools.register_notification(
+            sender="system",
+            recipient="broadcasted",
+            title=json["title"],
+            body=json["body"],
+            sound=json.get("sound", "default"),
+            data=json.get("data", {}),
+            ttl=json.get("ttl", 1),
+            isCritical=json.get("isCritical", False),
+        )
+        return {"success": True, "message": "This message was broadcasted successfully to all users."}
+
+
+    notificationData = {
+        "sender": json.get("from", "system"),
+        "recipient": json["to"],
+        "title": json["title"],
+        "body": json["body"],
+        "sound": json.get("sound", "default"),
+        "data": json.get("data", {}),
+        "ttl": json.get("ttl", 1),
+        "isCritical": json.get("isCritical", False),
+    }
+
+    userPushTokens = await authTools.get_user_push_tokens(json["to"])
+
+    if not userPushTokens:
+        raise exceptions.NotFound(message="Push configuration not found!", type="push_config_not_found")
+    
+    pusher.bulk_push(
+        userPushTokens,
+        notificationData["title"],
+        notificationData["body"],
+        notificationData["sound"],
+        notificationData["data"],
+        notificationData["ttl"],
+        notificationData["isCritical"],
+    )
+    
+    notificationData["createdAt"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    await notificationTools.register_notification(
+        sender=notificationData["sender"],
+        recipient=notificationData["recipient"],
+        title=notificationData["title"],
+        body=notificationData["body"],
+        sound=notificationData["sound"],
+        data=notificationData["data"],
+        ttl=notificationData["ttl"],
+        isCritical=notificationData["isCritical"],
+    )
+    return {"success": True, "message": "Notification sent successfully"}

@@ -182,3 +182,26 @@ class AuthenticationTools:
         await self.update_user(userId, user)
         
         return user
+    
+    # Notification tokens related
+    async def get_all_push_tokens(self) -> list:
+        users = db.users.find({"pushConfiguration": {"$exists": True, "$ne": []}})
+        pushTokens = []
+        for user in users:
+            if "pushConfiguration" in user:
+                for config in user["pushConfiguration"]:
+                    if "pushToken" in config:
+                        pushTokens.append(config["pushToken"])
+        return pushTokens
+    
+    async def get_user_push_tokens(self, userId: str) -> list:
+        user = await self.get_user_by_id(userId)
+        if not user or "pushConfiguration" not in user:
+            return []
+        
+        pushTokens = []
+        for config in user["pushConfiguration"]:
+            if "pushToken" in config:
+                pushTokens.append(config["pushToken"])
+        
+        return pushTokens
