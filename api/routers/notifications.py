@@ -233,6 +233,20 @@ async def v2_checkInDevice(request: Request, deviceId: str):
     raise exceptions.NotFound(message="Device not found", type="device_not_found")
 
 
+@router.delete("/v2/notifications/devices/{deviceId}")
+@authRequired
+async def v2_deleteDevice(request: Request, deviceId: str):
+    for registeredDevice in request.state.user.get("pushConfiguration", []):
+        if registeredDevice["deviceId"] == deviceId:
+            request.state.user["pushConfiguration"] = [
+                device for device in request.state.user["pushConfiguration"] if device["deviceId"] != deviceId
+            ]
+            await authTools.update_user(request.state.user["id"], request.state.user)
+            return {"success": True, "message": "The device was removed successfully."}
+    
+    raise exceptions.NotFound(message="Device not found", type="device_not_found")
+
+
 @router.get("/v2/notifications")
 @authRequired
 async def v2_getNotifications(request: Request, page: int = 1, limit: int = 20):
