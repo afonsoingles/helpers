@@ -17,6 +17,7 @@ class InternalPusher:
                     "badge": 0,
                     "ttl": ttl,
                     "priority": "high",
+                    "channelId": "critical" if isCritical else "default"
 
                 }
             )
@@ -38,6 +39,7 @@ class InternalPusher:
                     "badge": 0,
                     "ttl": ttl,
                     "priority": "high",
+                    "channelId": "critical" if isCritical else "default"
                 }
             )
             return response.json()
