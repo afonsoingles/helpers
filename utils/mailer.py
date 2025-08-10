@@ -11,4 +11,5 @@ class Mailer:
             data={"from": f"{name} <{os.environ.get("MAILGUN_SENDER_EMAIL")}>",
                 "to": f"{to}",
                 "subject": subject,
-                "text": text}).json()
+                "text": text
+            }).json()
