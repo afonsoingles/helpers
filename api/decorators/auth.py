@@ -4,10 +4,7 @@ from fastapi import Request
 from api.utils.authTools import AuthenticationTools
 import api.errors.exceptions as exceptions
 
-
-
 auth = AuthenticationTools()
-
 
 def authRequired(func=None, *, admin: bool = False, allowBanned: bool = False):
     def decorator(func):
@@ -19,33 +16,40 @@ def authRequired(func=None, *, admin: bool = False, allowBanned: bool = False):
             if not request:
                 raise RuntimeError("Cannot find request in args or kwargs")
 
-            auth_header = (
+            authHeader = (
                 request.headers.get("Authorization")
                 or request.headers.get("authorization")
             )
-            if not auth_header or not auth_header.startswith("Bearer "):
+            if not authHeader or not authHeader.startswith("Bearer "):
                 raise exceptions.BadRequest(
                     message="No authentication token provided",
                     type="missing_token"
                 )
 
-            token = auth_header.split(" ", 1)[1]
-
+            token = authHeader.split(" ", 1)[1]
             email = await auth.decode_token(token)
-
             user = await auth.get_user_by_email(email)
             if not user:
                 raise exceptions.Unauthorized(
                     message="Invalid authentication token",
                     type="invalid_token"
                 )
-            
+
             if user.get("status") == "suspended" and not allowBanned:
                 raise exceptions.Forbidden(
                     message="User account is suspended",
                     type="account_blocked"
                 )
+
             request.state.user = user
+            request.state.impersonatedBy = None
+
+            impersonateId = request.headers.get("X-Impersonate-User")
+            if user.get("admin", False) and impersonateId:
+                targetUser = await auth.get_user_by_id(impersonateId)
+                if targetUser:
+                    request.state.user = targetUser
+                    request.state.impersonatedBy = user.get("id")
 
             if admin and not user.get("admin", False):
                 raise exceptions.Forbidden(
