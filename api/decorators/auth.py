@@ -35,11 +35,7 @@ def authRequired(func=None, *, admin: bool = False, allowBanned: bool = False):
                     type="invalid_token"
                 )
 
-            if user.get("status") == "suspended" and not allowBanned:
-                raise exceptions.Forbidden(
-                    message="User account is suspended",
-                    type="account_blocked"
-                )
+            
 
             request.state.user = user
             request.state.impersonatedBy = None
@@ -50,7 +46,14 @@ def authRequired(func=None, *, admin: bool = False, allowBanned: bool = False):
                 if targetUser:
                     request.state.user = targetUser
                     request.state.impersonatedBy = user.get("id")
-
+                    
+            if request.state.user.get("status") == "suspended" and not allowBanned:
+                raise exceptions.Forbidden(
+                    message="User account is suspended",
+                    type="account_blocked"
+                )
+            
+        
             if admin and not user.get("admin", False):
                 raise exceptions.Forbidden(
                     message="Admin privileges required",
