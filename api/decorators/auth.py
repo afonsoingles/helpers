@@ -53,7 +53,13 @@ def authRequired(func=None, *, admin: bool = False, allowBanned: bool = False):
                     type="account_blocked"
                 )
             
-        
+            if request.state.user.get("status") == "deletionPending" and not allowBanned:
+                raise exceptions.Forbidden(
+                    message="User account is pending deletion",
+                    type="account_pending_deletion"
+                )
+            
+            
             if admin and not user.get("admin", False):
                 raise exceptions.Forbidden(
                     message="Admin privileges required",
