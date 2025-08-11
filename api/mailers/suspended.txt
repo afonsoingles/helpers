@@ -1,0 +1,17 @@
+Hello {userName},
+
+Due to a serious breach of our Terms of Service, your Helpers account has been suspended.
+This means you no longer have access to your account, and any helpers you were using have been deactivated.
+
+This action was taken after a thorough review of your account activity, which was found to be in violation of our policies. We take such matters very seriously to ensure the safety of Helpers.
+
+Specified Reason: _{note}_
+
+If you believe this action was taken in error, you may appeal by replying to this email with a detailed explanation of your situation.
+
+If you want to request a copy of your data, appeal this decision, or have any other questions, please reply to this email.
+
+Thank you for your understanding.
+
+Best regards,
+The Helpers Team
