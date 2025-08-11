@@ -2,6 +2,7 @@ import os
 from fastapi import APIRouter, Request
 import api.errors.exceptions as exceptions
 from api.utils.authTools import AuthenticationTools
+from utils.mailer import Mailer
 from api.decorators.auth import authRequired
 from datetime import datetime
 import pytz
@@ -9,6 +10,7 @@ import pytz
 
 router = APIRouter()
 authTools = AuthenticationTools()
+mailer = Mailer()
 
 
 
@@ -156,6 +158,16 @@ async def v2_admin_blockUser(request: Request, userId: str):
         raise exceptions.BadRequest("Reason is required", "missing_reason")
 
     blocked_user = await authTools.block_user(userId, reason)
+
+    mailer.send_email(
+        sender="Helpers",
+        subject="Account Blocked",
+        templateName="suspended",
+        to=blocked_user["email"],
+        userName=blocked_user["name"],
+        note=reason
+
+    )
     if not blocked_user:
         raise exceptions.NotFound("User not found", "user_not_found")
     return {"success": True, "message": "User blocked successfully", "user": blocked_user}
