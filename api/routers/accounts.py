@@ -161,7 +161,7 @@ async def v2_admin_blockUser(request: Request, userId: str):
 
     mailer.send_email(
         sender="Helpers",
-        subject="Account Blocked",
+        subject="Your account was suspended",
         templateName="suspended",
         to=blocked_user["email"],
         userName=blocked_user["name"],

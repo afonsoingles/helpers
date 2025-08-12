@@ -5,11 +5,11 @@ This means you no longer have access to your account, and any helpers you were u
 
 This action was taken after a thorough review of your account activity, which was found to be in violation of our policies. We take such matters very seriously to ensure the safety of Helpers.
 
-Specified Reason: _{note}_
+Specified Reason: {note}
 
 If you believe this action was taken in error, you may appeal by replying to this email with a detailed explanation of your situation.
 
-If you want to request a copy of your data, appeal this decision, or have any other questions, please reply to this email.
+If you want to request a copy of your data, appeal this decision, or have any other questions, please contact us at hi@afonsoingles.dev
 
 Thank you for your understanding.
 
