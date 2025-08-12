@@ -11,7 +11,7 @@ class Mailer:
         return content.format(**templateVars)
 
     def send_email(self, sender, subject, templateName, to=None, **fields):
-        textBody = self._load_emplate(templateName, **fields)
+        textBody = self._load_template(templateName, **fields)
 
         return requests.post(
             f"https://api.eu.mailgun.net/v3/{os.environ.get('MAILGUN_DOMAIN')}/messages",
