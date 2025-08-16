@@ -84,27 +84,36 @@ async def v2_login(request: Request):
     return {"success": True, "token": token}
 
 
-@router.delete("/v2/accounts/delete", status_code=200)
-@authRequired
+@router.delete("/v2/accounts/delete", status_code=200) # NOTE: this requires admin impersonation to confirm delete
+@authRequired(allowBanned=True)
 async def v2_deleteAccount(request: Request):
-    try:
-        body = await request.json()
-    except:
-        raise exceptions.BadRequest("Invalid JSON data provided", "invalid_json")
 
-    password = body.get("password")
+    if request.state.user.get("status") == "deletionPending" and not request.state.impersonatedBy:
+        raise exceptions.Forbidden("Your account is already pending deletion. Please wait for the process to complete.", "deletion_pending")
 
-    if not password:
-        raise exceptions.BadRequest("Password is required", "missing_fields")
+    if request.state.user.get("status") == "deletionPending" and request.state.impersonatedBy:
 
-    rawUser = await authTools.get_user_by_email(request.state.user["email"], bypassCache=True, raw=True)
-
-    if not authTools.check_password(password, rawUser["passwordHash"]):
-        raise exceptions.BadRequest("Invalid password", "invalid_password")
-
-    await authTools.delete_user(request.state.user)
+        await authTools.delete_user(request.state.user)
+        mailer.send_email(
+            sender="Helpers",
+            subject="Your account has been deleted",
+            templateName="account_deleted",
+            to=request.state.user["email"],
+            userName=request.state.user["name"]
+        )
+        return {"success": True, "message": "Deletion confirmed. This account is now deleted."}
     
-    return {"success": True, "message": "Account deleted successfully"}
+    
+    await authTools.update_user(request.state.user["id"], {"status": "deletionPending"})
+    mailer.send_email(
+        sender="Helpers",
+        subject="Your account deletion is pending",
+        templateName="account_deletion_pending",
+        to=request.state.user["email"],
+        userName=request.state.user["name"]
+    )
+
+    return {"success": True, "message": "Your account deletion is now pending"}
 
 
 # Admin account management

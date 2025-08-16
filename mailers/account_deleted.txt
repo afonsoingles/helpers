@@ -1,0 +1,8 @@
+Hello {userName},
+
+We are writing you this email to confirm that your Helpers account has successfully been deleted.
+This action is irreversible, and all your data has been removed from our systems.
+
+
+Best regards,
+The Helpers Team

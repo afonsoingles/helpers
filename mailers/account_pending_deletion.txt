@@ -1,0 +1,10 @@
+Hello {userName},
+
+We have received your request to delete your Helpers account. We are now processing your request and will send a confirmation once the deletion is complete.
+Please note that your account is not accessible while we process this request.
+Once the deletion is finalized, it cannot be reversed and all your data will be permanently removed from our systems.
+
+If you did not initiate this request, please us at hi@afonsoingles.dev immediately.
+
+Best regards,
+The Helpers Team
