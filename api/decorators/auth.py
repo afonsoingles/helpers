@@ -45,9 +45,9 @@ def authRequired(func=None, *, admin: bool = False, allowBanned: bool = False):
                 targetUser = await auth.get_user_by_id(impersonateId)
                 if targetUser:
                     request.state.user = targetUser
-                    request.state.impersonatedBy = user.get("id")
+                    request.state.impersonatedBy = user
                     
-            if request.state.user.get("status") == "suspended" and not allowBanned:
+            if request.state.user.get("status") == "suspended" and not allowBanned and not request.state.impersonatedBy:
                 raise exceptions.Forbidden(
                     message="User account is suspended",
                     type="account_blocked"
