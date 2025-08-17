@@ -103,8 +103,8 @@ async def v2_deleteAccount(request: Request):
         )
         return {"success": True, "message": "Deletion confirmed. This account is now deleted."}
     
-    
-    await authTools.update_user(request.state.user["id"], {"status": "deletionPending"})
+    request.state.user["status"] = "deletionPending"
+    await authTools.update_user(request.state.user["id"], request.state.user)
     mailer.send_email(
         sender="Helpers",
         subject="Your account deletion is pending",
