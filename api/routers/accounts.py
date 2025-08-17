@@ -108,7 +108,7 @@ async def v2_deleteAccount(request: Request):
     mailer.send_email(
         sender="Helpers",
         subject="Your account deletion is pending",
-        templateName="account_deletion_pending",
+        templateName="account_pending_deletion",
         to=request.state.user["email"],
         userName=request.state.user["name"]
     )
