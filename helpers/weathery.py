@@ -59,3 +59,13 @@ class Weathery(BaseHelper):
 
     def schedule(self):
         schedule.every().day.at(f"08:40:00", os.environ.get("TIMEZONE")).do(self.run)
+    
+    def get_schedule_config(self):
+        """Return schedule configuration for the execution queue system."""
+        return {
+            "type": "daily",
+            "time": "08:40:00",
+            "priority": 2,  # High priority for weather updates
+            "expiry": 1800,  # 30 minutes expiry
+            "enabled": True
+        }

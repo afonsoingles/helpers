@@ -23,5 +23,14 @@ class checkIn(BaseHelper):
         logger.info(f"[checkIn] Finished at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
 
     def schedule(self):
-       
         schedule.every(2).minutes.do(self.run)
+    
+    def get_schedule_config(self):
+        """Return schedule configuration for the execution queue system."""
+        return {
+            "type": "interval",
+            "interval_minutes": 2,
+            "priority": 1,  # Highest priority for system health checks
+            "expiry": 120,  # 2 minutes expiry
+            "enabled": True
+        }
