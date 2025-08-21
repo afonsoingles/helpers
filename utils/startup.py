@@ -2,10 +2,7 @@ import os
 import importlib
 from bases.helper import BaseHelper
 import asyncio
-import logging
-
-logger = logging.getLogger("main")
-
+from main import logger
 class Startup:
 
     def discover_helpers(self):
@@ -25,9 +22,24 @@ class Startup:
                         logger.info(f"[STARTUP] Loaded helper: {obj.__name__}")
                         helpers.append(obj())
             except Exception as e:
-                logger.error(f"Error importing helper {module_name}: {e}", e)
+                logger.error(f"Error importing helper {module_name}", e)
         return helpers
     
+
+    def discover_helpers_v2(self):
+
+        helperFiles = [file for file in os.listdir("helpers") if file.endswith('.py')]
+
+        for file in helperFiles:
+            try:
+                helper = importlib.import_module(f"helpers.{file[:-3]}")
+                for attr in dir(helper):
+                    obj = getattr(helper, attr)
+                    if isinstance(obj, type) and issubclass(obj, BaseHelper) and obj is not BaseHelper:
+                        logger.info(f"[STARTUP] Loaded helper: {obj.__name__} with ID: {obj.id}")
+            except Exception as e:
+                logger.error(f"Error importing helper {file}: {e}", e)
+
     async def run_helper(self, helper):
         if helper.run_at_start:
             try:
