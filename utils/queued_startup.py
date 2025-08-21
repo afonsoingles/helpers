@@ -7,8 +7,7 @@ from typing import Dict, List
 from utils.execution_queue import ExecutionQueue
 from utils.execution_dispatcher import ExecutionDispatcher
 from bases.helper import BaseHelper
-
-logger = logging.getLogger("main")
+from utils.shared_logger import logger
 
 class QueuedStartup:
     """

@@ -1,6 +1,6 @@
 from bases.helper import BaseHelper
 from datetime import datetime
-from main import logger
+from utils.shared_logger import logger
 import requests
 import schedule
 from math import radians, sin, cos, sqrt, atan2

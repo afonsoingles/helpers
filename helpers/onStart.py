@@ -1,6 +1,6 @@
 from bases.helper import BaseHelper
 from utils.github import GitHub
-from main import logger
+from utils.shared_logger import logger
 from utils.pusher import Pusher
 import time
 

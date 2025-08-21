@@ -5,7 +5,7 @@ import requests
 import schedule
 from utils.mongoHandler import MongoHandler
 from utils.pusher import Pusher
-from main import logger
+from utils.shared_logger import logger
 
 mongo = MongoHandler()
 pusher = Pusher()

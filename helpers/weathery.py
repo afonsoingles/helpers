@@ -3,7 +3,7 @@ from bases.helper import BaseHelper
 import schedule
 from datetime import datetime
 from utils.getWeatherData import getTodayForecast
-from main import logger
+from utils.shared_logger import logger
 from utils.getRules import getValidRules
 from utils.mailer import Mailer
 from utils.pusher import Pusher

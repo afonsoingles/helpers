@@ -6,8 +6,7 @@ from utils.execution_queue import ExecutionQueue
 import importlib
 import os
 from bases.helper import BaseHelper
-
-logger = logging.getLogger("main")
+from utils.shared_logger import logger
 
 class ExecutionDispatcher:
     """

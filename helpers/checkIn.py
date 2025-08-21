@@ -2,7 +2,7 @@ from bases.helper import BaseHelper
 from datetime import datetime
 import os
 import requests
-from main import logger
+from utils.shared_logger import logger
 import schedule
 
 class checkIn(BaseHelper):

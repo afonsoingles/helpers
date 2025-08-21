@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 import json
 from utils.airtabler import Airtabler
-from main import logger
+from utils.shared_logger import logger
 
 airtabler = Airtabler(base_id=os.environ.get("AIRTABLE_BASE_ID"), api_key=os.environ.get("AIRTABLE_API_KEY"))
 

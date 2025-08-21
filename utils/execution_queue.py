@@ -5,9 +5,7 @@ import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 from api.utils.redis import redisClient
-import logging
-
-logger = logging.getLogger("main")
+from utils.shared_logger import logger
 
 class ExecutionQueue:
     """
