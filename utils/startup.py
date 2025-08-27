@@ -103,7 +103,6 @@ class Startup:
                         jobData = await systemTools.get_job_details(job)
                         executionTime = int(jobData.get("executionTime", 0))
                         executionExpiry = int(jobData.get("executionExpiry", 0))
-                        priority = int(jobData.get("priority", 3))
                         userId = jobData.get("userId")
                         helperId = jobData.get("helperId")
                         jobId = jobData.get("jobId")
@@ -112,7 +111,7 @@ class Startup:
                             await systemTools.update_job_status(jobId, "expired")
                         else:
                             await systemTools.update_job_status(jobId, "running")
-                            await systemTools.run_helper()
+                            await systemTools.run_helper(helperId, userId)
                             self.logger.info(f"[DISPATCHER] Dispatched job {jobId} for execution.")
 
                     except Exception as e:
