@@ -16,9 +16,8 @@ class onStart(BaseHelper):
             require_admin_activation=True,
             boot_run=True,
             priority=1,
-            params={
-                "target": "user"
-            }
+            schedule=[],
+            allow_execution_time_config=False,
         )
 
     def run(self):
@@ -26,13 +25,13 @@ class onStart(BaseHelper):
         time.sleep(15) # wait a bit, so the API can start
         pusher.push(
             sender="Startup Service",
-            recipient=self.params["target"]["id"],
+            recipient=self.user["id"],
             title="Helpers started",
             body=f"Hello! Helpers have been started and are running version {gh.get_latest_commit()}",
             ttl=30,
         )
 
-        logger.info(f"[onStart] Pushed notification")
+        logger.info(f"[onStart] Pushed notification to user {self.user['id']} about startup.")
 
     def schedule(self):
         pass

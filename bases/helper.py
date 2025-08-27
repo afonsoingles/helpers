@@ -4,24 +4,30 @@ class BaseHelper:
             id: str = None, # internal id (system + admin dash only)
             name: str = None, # readable name
             description: str = None, # readable description
-            params: dict = None, # parameters for the helper
+            user: dict = {}, # user running the helper
             internal: bool = False, # use if this is system level and NOT user-facing
             admin_only: bool = False, # only admins can **run** this helper
             require_admin_activation: bool = False, # this helper can only be activated by an admin. This does not mean that only admins can run it.
             boot_run: bool = False, # run at startup
-            priority: int = 5, # priority for scheduling, from 1 (highest) to 5 (lowest)
+            priority: int = 5, # priority for scheduling, from 5 (highest) to 1 (lowest)
             timeout: int = 100, # the maxium time in seconds this helper can run before being considered expired
+            allow_execution_time_config: bool = True, # can the user configure the execution time of this helper
+            disabled: bool = False, # disable the helper entirely
+            schedule: list = [] # helper running schedule (if applicable)
         ):
         self.id = id
         self.name = name
         self.description = description
-        self.params = params
+        self.user = user
         self.internal = internal
         self.admin_only = admin_only
         self.require_admin_activation = require_admin_activation
         self.boot_start = boot_run
         self.priority = priority
         self.timeout = timeout
+        self.allow_execution_time_config = allow_execution_time_config
+        self.disabled = disabled
+        self.schedule = schedule
 
 
     def run(self):
