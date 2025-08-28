@@ -5,6 +5,7 @@ class BaseHelper:
             name: str = None, # readable name
             description: str = None, # readable description
             user: dict = {}, # user running the helper
+            params: dict = {}, # parameters for the helper
             internal: bool = False, # use if this is system level and NOT user-facing
             admin_only: bool = False, # only admins can **run** this helper
             require_admin_activation: bool = False, # this helper can only be activated by an admin. This does not mean that only admins can run it.
@@ -13,12 +14,13 @@ class BaseHelper:
             timeout: int = 100, # the maxium time in seconds this helper can run before being considered expired
             allow_execution_time_config: bool = True, # can the user configure the execution time of this helper
             disabled: bool = False, # disable the helper entirely
-            schedule: list = [] # helper running schedule (if applicable)
+            schedule: list = [] # helper running schedule (only required if allow_execution_time_config is False)
         ):
         self.id = id
         self.name = name
         self.description = description
         self.user = user
+        self.params = params
         self.internal = internal
         self.admin_only = admin_only
         self.require_admin_activation = require_admin_activation

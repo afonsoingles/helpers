@@ -6,6 +6,7 @@ import datetime
 from utils.logger import Logger
 from utils.systemTools import SystemTools
 from api.utils.authTools import AuthenticationTools
+from utils.queueTools import QueueTools
 
 systemTools = SystemTools()
 authTools = AuthenticationTools()
@@ -14,6 +15,7 @@ authTools = AuthenticationTools()
 class Startup:
 
     def __init__(self, logger: Logger):
+        self.queueTools = QueueTools(logger)
         self.logger = logger
 
    
@@ -38,69 +40,15 @@ class Startup:
 
         return loadedHelpers
     
-    async def build_initial_execution_queue(self):
-        self.logger.info("[QUEUE] Building initial execution queue...")
-        #TODO: handle para internal helpers
-        activeUsers = await authTools.get_all_active_users()
-        currentTime = int(datetime.datetime.now().timestamp())
-        lookahedTime = currentTime + 2 * 3600  # 2h
-        
-
-        for user in activeUsers:
-            userHelpers = user["services"]
-            for helper in userHelpers:
-                if helper["enabled"] == False:
-                    continue
-                
-                helperConfig = await systemTools.get_registered_helper(helper["id"])
-                if not helperConfig or helperConfig["disabled"] or helperConfig["internal"]:
-                    self.logger.warn(f"[QUEUE] Helper {helper['id']} is not available. Skipping scheduling for user {user['id']}.")
-                    continue
-                
-                if helperConfig["admin_only"] and not user["admin"]:
-                    self.logger.warn(f"[QUEUE] Helper {helper['id']} is admin-only. Skipping scheduling for non-admin user {user['id']}.")
-                    continue
-
-                if helperConfig["boot_run"]:
-                    self.logger.info(f"[QUEUE] Scheduling boot_run for helper {helper['id']} for user {user['id']}.")
-                    await systemTools.queue_job(
-                        helper_id=helper["id"],
-                        user_id=user["id"],
-                        execution_time=int(datetime.datetime.now().timestamp()), # repeat bc currentTime maybe be older
-                        priority=helperConfig.get("priority", 3),
-                        execution_expiry=helperConfig.get("timeout", 3600),
-                    )
-                    continue
-                
-                if helperConfig["allow_execution_time_config"]:
-                    scheduleExpressions = helper["schedule"]
-                else:
-                    scheduleExpressions = helperConfig["schedule"]
-
-                for expression in scheduleExpressions:
-                    try:
-                        timestamps = await systemTools.cron_to_timestamps(expression, currentTime, lookahedTime)
-                        for ts in timestamps:
-                            await systemTools.queue_job(
-                                helper_id=helper["id"],
-                                user_id=user["id"],
-                                execution_time=ts,
-                                priority=helperConfig["priority"],
-                                execution_expiry=helperConfig["timeout"],
-                            )
-                    except Exception as e:
-                        self.logger.error(f"[QUEUE] Invalid cron expression '{expression}' for helper {helper['id']}. Skipping.", e)
-        
-    
     async def run_dispatcher(self):
         while True:
             try:
                 currentTime = int(datetime.datetime.now().timestamp())
-                jobs = await systemTools.get_jobs_to_run(currentTime)
+                jobs = await self.queueTools.get_jobs_to_run(currentTime)
 
                 for job in jobs:
                     try:
-                        jobData = await systemTools.get_job_details(job)
+                        jobData = await self.queueTools.get_job_details(job)
                         executionTime = int(jobData.get("executionTime", 0))
                         executionExpiry = int(jobData.get("executionExpiry", 0))
                         userId = jobData.get("userId")

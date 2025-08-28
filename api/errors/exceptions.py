@@ -36,3 +36,9 @@ class Forbidden(GlobalApiError):
 
     def __init__(self, message: str = "", type: str = ""):
         super().__init__(message, type)
+
+class Conflict(GlobalApiError):
+    """Conflict"""
+
+    def __init__(self, message: str = "", type: str = ""):
+        super().__init__(message, type)

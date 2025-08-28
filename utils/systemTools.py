@@ -1,9 +1,8 @@
 from api.utils.redis import redisClient
-import uuid
 import croniter
 import datetime
 import asyncio
-
+import json
 
 class SystemTools:
 
@@ -11,43 +10,24 @@ class SystemTools:
         await redisClient.set(f"internalAvailableHelpers:{helper_id}", helper_value)
     
     async def get_registered_helper(self, helper_id: str):
-        return await redisClient.get(f"internalAvailableHelpers:{helper_id}")
+        redisResult = await redisClient.exists(f"internalAvailableHelpers:{helper_id}")
+        if not redisResult:
+            return None
+        return json.loads(redisResult)
     
     async def clear_helpers(self):
         keys = await redisClient.keys("internalAvailableHelpers:*")
         if keys:
             await redisClient.delete(*keys)
-    
-    async def queue_job(self, helper_id: str, user_id: str, execution_time: int, priority: int, execution_expiry: int):
-        jobData = {
-            "executionId": str(uuid.uuid4()),
-            "userId": user_id,
-            "helperId": helper_id,
-            "executionTime": execution_time, # scheduled time
-            "executionScore": execution_time * 10 + (6 - priority),
-            "priority": priority,
-            "executionExpiry": execution_expiry,
-            "status": "queued"
-        }
 
-        await redisClient.hset(f"executionJob:{jobData['executionId']}", mapping=jobData)
-
-        await redisClient.zadd("internalExecutionQueue", {jobData['executionId']: jobData['executionScore']})
-
-    async def dequeue_job(self, execution_id: str):
-        await redisClient.zrem("internalExecutionQueue", execution_id)
-        await redisClient.hset(f"executionJob:{execution_id}", mapping={"status": "cancelled"})
-    
-    async def get_jobs_to_run(self, time: int):
-        job_ids = await redisClient.zrangebyscore("internalExecutionQueue", "-inf", time)
-        return [job_id.decode("utf-8").replace("executionJob:", "") for job_id in job_ids]
-        
-    async def get_job_details(self, execution_id: str):
-        return await redisClient.hgetall(f"executionJob:{execution_id}")
-    
-    async def update_job_status(self, id: str, status: str):
-        await redisClient.hset(f"executionJob:{id}", "status", status)
-
+    async def get_all_helpers(self):
+        keys = await redisClient.keys("internalAvailableHelpers:*")
+        helpers = []
+        for key in keys:
+            helperData = await redisClient.get(key)
+            if helperData:
+                helpers.append(json.loads(helperData))
+        return helpers
     async def cron_to_timestamps(self, expression, start, end):
         base = datetime.datetime.fromtimestamp(start)
         cron = croniter.croniter(expression, base)

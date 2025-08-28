@@ -10,11 +10,13 @@ from utils.startup import Startup
 from utils.logger import Logger
 from utils.github import GitHub
 from utils.systemTools import SystemTools
+from utils.queueTools import QueueTools
 
 
 systemTools = SystemTools()
 logger = Logger()
 startup = Startup(logger)
+queueTools = QueueTools(logger)
 gh = GitHub()
 
 if os.environ.get("DB_ENV") == "production":
@@ -46,7 +48,7 @@ async def main():
     loadedHelpers = await startup.discover_helpers()
     logger.info(f"[STARTUP] Found {len(loadedHelpers)} helpers.")
 
-    await startup.build_initial_execution_queue()
+    await queueTools.build_initial_execution_queue()
     logger.info("[STARTUP] Built initial execution queue.")
 
     try:
