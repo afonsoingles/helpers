@@ -39,10 +39,10 @@ class QueueTools:
         userData = await authTools.get_user_by_id(user_id)
         userJobs = await redisClient.zrange("internalExecutionQueue", 0, -1)
         for job in userJobs:
-            job = job.decode("utf-8").replace("executionJob:", "")
+            job = str(job).replace("executionJob:", "")
             jobDetails = await self.get_job_details(job)
             if jobDetails.get("userId") == user_id:
-                await self.dequeue_job(job["executionId"])
+                await self.dequeue_job(jobDetails["executionId"])
         
         userHelpers = userData["services"]
         currentTime = int(datetime.datetime.now().timestamp())
@@ -163,6 +163,5 @@ class QueueTools:
             except Exception as e:
                 self.logger.error(f"[QUEUE] Error processing user {user['id']}. Skipping", e)
                 
-        
-    
+
     
