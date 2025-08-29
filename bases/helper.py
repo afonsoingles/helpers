@@ -24,7 +24,7 @@ class BaseHelper:
         self.internal = internal
         self.admin_only = admin_only
         self.require_admin_activation = require_admin_activation
-        self.boot_start = boot_run
+        self.boot_run = boot_run
         self.priority = priority
         self.timeout = timeout
         self.allow_execution_time_config = allow_execution_time_config

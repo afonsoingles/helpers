@@ -8,7 +8,7 @@ gh = GitHub()
 pusher = Pusher()
 
 class onStart(BaseHelper):
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__(
             id="onStart",
             name="Startup Service",
@@ -18,11 +18,11 @@ class onStart(BaseHelper):
             priority=1,
             schedule=[],
             allow_execution_time_config=False,
+            **kwargs,
         )
 
-    def run(self):
-
-        time.sleep(15) # wait a bit, so the API can start
+    async def run(self):
+        logger.info(f"[onStart] Running startup helper for {self.user["id"]}...")
         pusher.push(
             sender="Startup Service",
             recipient=self.user["id"],

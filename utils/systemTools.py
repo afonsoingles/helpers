@@ -10,15 +10,15 @@ class SystemTools:
         await redisClient.set(f"internalAvailableHelpers:{helper_id}", helper_value)
     
     async def get_registered_helper(self, helper_id: str):
-        redisResult = await redisClient.exists(f"internalAvailableHelpers:{helper_id}")
+        redisResult = await redisClient.get(f"internalAvailableHelpers:{helper_id}")
         if not redisResult:
             return None
         return json.loads(redisResult)
     
     async def clear_helpers(self):
         keys = await redisClient.keys("internalAvailableHelpers:*")
-        if keys:
-            await redisClient.delete(*keys)
+        for key in keys:
+            await redisClient.delete(key)
 
     async def get_all_helpers(self):
         keys = await redisClient.keys("internalAvailableHelpers:*")
@@ -28,6 +28,7 @@ class SystemTools:
             if helperData:
                 helpers.append(json.loads(helperData))
         return helpers
+    
     async def cron_to_timestamps(self, expression, start, end):
         base = datetime.datetime.fromtimestamp(start)
         cron = croniter.croniter(expression, base)
@@ -43,9 +44,8 @@ class SystemTools:
         return times
         
     async def run_helper(self, helperId, userData):
-
         helperModule = __import__(f"helpers.{helperId}", fromlist=[helperId])
-        helper = getattr(helperModule, "BaseHelper")(user=userData)
+        helper = getattr(helperModule, helperId)(user=userData)
 
         asyncio.create_task(helper.run())
         return

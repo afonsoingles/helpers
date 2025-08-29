@@ -103,8 +103,8 @@ async def registerHelper(request: Request):
     }
 
     request.state.user["services"].append(helperData)
-    await authTools.update_user(request.state.user["id"], {"services": request.state.user["services"]})
+    await authTools.update_user(request.state.user["id"], {"services": json.dumps(request.state.user["services"])})
     
     BackgroundTasks.add_task(queueTools.update_queue_for_user, user_id=request.state.user["id"])
-
+    #TODO: add ts to queue
     return {"success": True, "message": "Helper registered successfully!", "helper": helperData}

@@ -3,6 +3,7 @@ import importlib
 from bases.helper import BaseHelper
 import asyncio
 import datetime
+import json
 from utils.logger import Logger
 from utils.systemTools import SystemTools
 from api.utils.authTools import AuthenticationTools
@@ -19,8 +20,8 @@ class Startup:
         self.logger = logger
 
    
-    async def discover_helpers(self):
 
+    async def discover_helpers(self):
         helperFiles = [file for file in os.listdir("helpers") if file.endswith('.py')]
         loadedHelpers = []
 
@@ -30,16 +31,17 @@ class Startup:
                 for attr in dir(helper):
                     obj = getattr(helper, attr)
                     if isinstance(obj, type) and issubclass(obj, BaseHelper) and obj is not BaseHelper:
-                        init_args = {param: getattr(obj, param, None) for param in obj.__init__.__annotations__.keys()}
                         instance = obj()
-                        await systemTools.register_helper(instance.id, str(init_args))
+                        init_args = dict(instance.__dict__)
+                        await systemTools.register_helper(instance.id, json.dumps(init_args))
                         loadedHelpers.append(instance.id)
                         self.logger.info(f"[STARTUP] Loaded helper: {instance.name} with ID: {instance.id}")
             except Exception as e:
-                self.logger.warn(f"Unable to import helper on file {file}. Please check helper configuration!\nErr")
+                self.logger.warn(f"Unable to import helper on file {file}. Please check helper configuration!\n{e}")
 
         return loadedHelpers
-    
+
+        
     async def run_dispatcher(self):
         while True:
             try:
@@ -47,19 +49,21 @@ class Startup:
                 jobs = await self.queueTools.get_jobs_to_run(currentTime)
 
                 for job in jobs:
+                    self.logger.info(f"[DISPATCHER] Processing job {job}...")
                     try:
                         jobData = await self.queueTools.get_job_details(job)
                         executionTime = int(jobData.get("executionTime", 0))
                         executionExpiry = int(jobData.get("executionExpiry", 0))
                         userId = jobData.get("userId")
                         helperId = jobData.get("helperId")
-                        jobId = jobData.get("jobId")
+                        jobId = job
 
                         if currentTime > executionTime + executionExpiry:
-                            await systemTools.update_job_status(jobId, "expired")
+                            await self.queueTools.update_job_status(jobId, "expired")
                         else:
-                            await systemTools.update_job_status(jobId, "running")
-                            await systemTools.run_helper(helperId, userId)
+                            await self.queueTools.update_job_status(jobId, "running")
+                            userData = await authTools.get_user_by_id(userId)
+                            await systemTools.run_helper(helperId, userData)
                             self.logger.info(f"[DISPATCHER] Dispatched job {jobId} for execution.")
 
                     except Exception as e:
