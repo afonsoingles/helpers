@@ -65,7 +65,7 @@ async def main():
 
         await asyncio.gather(
             startup.run_dispatcher(),
-            #sliding_window_expansion()
+            queueTools.queue_updater_realtime()
         )
 
     except KeyboardInterrupt as e:

@@ -120,7 +120,8 @@ class QueueTools:
                 userHelpers = user["services"]
                 for helper in userHelpers:
                     self.logger.info(f"[QUEUE] Processing helper {helper['id']} for user {user['id']}...")
-                    if helper["enabled"] == False:
+                    if not helper["enabled"]:
+                        self.logger.info(f"[QUEUE] Helper {helper['id']} is disabled for user {user['id']}. Skipping.")
                         continue
                     helperConfig = await systemTools.get_registered_helper(helper["id"])
                     if not helperConfig or helperConfig["disabled"] or helperConfig["internal"]:
@@ -162,6 +163,73 @@ class QueueTools:
                             self.logger.error(f"[QUEUE] Invalid cron expression '{expression}' for helper {helper['id']}. Skipping.", e)
             except Exception as e:
                 self.logger.error(f"[QUEUE] Error processing user {user['id']}. Skipping", e)
-                
-
     
+    async def queue_updater_realtime(self):
+        self.logger.info("[REALTIME QUEUE] Starting real-time queue updater...")
+        while True:
+            try:
+                currentTime = int(datetime.datetime.now().timestamp())
+                lookAhead = currentTime + 10 * 60  # 10 minutes ahead
+
+                activeUsers = await authTools.get_all_active_users()
+
+                for user in activeUsers:
+                    try:
+                        self.logger.info(f"[REALTIME QUEUE] Processing user {user['id']}...")
+                        userHelpers = user["services"]
+                        for helper in userHelpers:
+                            self.logger.info(f"[REALTIME QUEUE] Processing helper {helper['id']} for user {user['id']}...")
+                            if not helper["enabled"]:
+                                self.logger.info(f"[REALTIME QUEUE] Helper {helper['id']} is disabled for user {user['id']}. Skipping.")
+                                continue
+                            helperConfig = await systemTools.get_registered_helper(helper["id"])
+
+                            if helperConfig["boot_run"]:
+                                continue
+                            
+                            if not helperConfig or helperConfig["disabled"] or helperConfig["internal"]:
+                                self.logger.warn(f"[REALTIME QUEUE] Helper {helper['id']} is not available. Skipping scheduling for user {user['id']}.")
+                                continue
+
+                            if helperConfig["admin_only"] and not user["admin"]:
+                                self.logger.warn(f"[REALTIME QUEUE] Helper {helper['id']} is admin-only. Skipping scheduling for non-admin user {user['id']}.")
+                                continue
+
+                            if helperConfig["allow_execution_time_config"]:
+                                schedule_expressions = helper["schedule"]
+                            else:
+                                schedule_expressions = helperConfig["schedule"]
+
+                            for expression in schedule_expressions:
+                                try:
+                                    timestamps = await systemTools.cron_to_timestamps(expression, currentTime, lookAhead)
+                                    for ts in timestamps:
+                                        # Check if the job is already scheduled
+                                        existingJobs = await self.get_jobs_to_run(lookAhead)
+                                        if any(
+                                            (job_details := await self.get_job_details(job)) and
+                                            job_details.get("helperId") == helper["id"] and
+                                            job_details.get("userId") == user["id"]
+                                            for job in existingJobs
+                                        ):
+                                            self.logger.info(f"[REALTIME QUEUE] Job for helper {helper['id']} and user {user['id']} at {ts} already scheduled. Skipping.")
+                                            continue
+
+                                        # Schedule the job if not already scheduled
+                                        await self.queue_job(
+                                            helper_id=helper["id"],
+                                            user_id=user["id"],
+                                            execution_time=ts,
+                                            priority=helperConfig.get("priority", 3),
+                                            execution_expiry=helperConfig.get("timeout", 3600),
+                                        )
+                                        self.logger.info(f"[REALTIME QUEUE] Scheduled job for helper {helper['id']} and user {user['id']} at {ts}.")
+                                except Exception as e:
+                                    self.logger.error(f"[REALTIME QUEUE] Invalid cron expression '{expression}' for helper {helper['id']}. Skipping.", exc_info=e)
+                    except Exception as e:
+                        self.logger.error(f"[REALTIME QUEUE] Error processing user {user['id']}. Skipping.", exc_info=e)
+
+                self.logger.info("[REALTIME QUEUE] Expanded execution queue by 10 minutes.")
+                await asyncio.sleep(600)  # Run every 10 minutes
+            except Exception as e:
+                self.logger.error("[REALTIME QUEUE] Error in real-time queue updater.", exc_info=e)
