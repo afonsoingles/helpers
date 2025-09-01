@@ -2,7 +2,6 @@ from bases.helper import BaseHelper
 from utils.github import GitHub
 from main import logger
 from utils.pusher import Pusher
-import time
 
 gh = GitHub()
 pusher = Pusher()
