@@ -64,12 +64,21 @@ async def registerHelper(request: Request, backgroundTasks: BackgroundTasks):
     for param, paramType in registeredHelper["params"].items():
         if param not in json:
             raise exceptions.BadRequest(f"Missing required parameters", "missing_parameters")
-        if paramType == "str" and not isinstance(json[param], str):
-            raise exceptions.BadRequest(f"Parameter {param} must be a string", "invalid_parameter_type")
-        if paramType == "int" and not isinstance(json[param], int):
-            raise exceptions.BadRequest(f"Parameter {param} must be an integer", "invalid_parameter_type")
-        if paramType == "bool" and not isinstance(json[param], bool):
-            raise exceptions.BadRequest(f"Parameter {param} must be a boolean", "invalid_parameter_type")
+        if paramType == "str":
+            try:
+                json[param] = str(json[param])
+            except:
+                raise exceptions.BadRequest(f"Parameter {param} must be a string", "invalid_parameter_type")
+        if paramType == "int":
+            try:
+                json[param] = int(json[param])
+            except:
+                raise exceptions.BadRequest(f"Parameter {param} must be an integer", "invalid_parameter_type")
+        if paramType == "bool":
+            try:
+                json[param] = bool(json[param])
+            except:
+                raise exceptions.BadRequest(f"Parameter {param} must be a boolean", "invalid_parameter_type")
         helperParams[param] = json[param]
     
     if registeredHelper["allow_execution_time_config"] and not json.get("schedule"):
