@@ -62,24 +62,24 @@ async def registerHelper(request: Request, backgroundTasks: BackgroundTasks):
     # param checks
     helperParams = {}
     for param, paramType in registeredHelper["params"].items():
-        if param not in json:
+        if param not in json["params"]:
             raise exceptions.BadRequest(f"Missing required parameters", "missing_parameters")
         if paramType == "str":
             try:
-                json[param] = str(json[param])
+                json["params"][param] = str(json["params"][param])
             except:
                 raise exceptions.BadRequest(f"Parameter {param} must be a string", "invalid_parameter_type")
         if paramType == "int":
             try:
-                json[param] = int(json[param])
+                json["params"][param] = int(json["params"][param])
             except:
                 raise exceptions.BadRequest(f"Parameter {param} must be an integer", "invalid_parameter_type")
         if paramType == "bool":
             try:
-                json[param] = bool(json[param])
+                json["params"][param] = bool(json["params"][param])
             except:
                 raise exceptions.BadRequest(f"Parameter {param} must be a boolean", "invalid_parameter_type")
-        helperParams[param] = json[param]
+        helperParams[param] = json["params"][param]
     
     if registeredHelper["allow_execution_time_config"] and not json.get("schedule"):
         raise exceptions.BadRequest("Missing required parameters", "missing_parameters")
@@ -162,17 +162,27 @@ async def updateHelper(request: Request, helperId: str, backgroundTasks: Backgro
     if not helperInUser:
         raise exceptions.NotFound("You do not have this helper registered", "helper_not_registered")
     
-    # param checks
-    helperParams = helperInUser["params"]  
+    helperParams = {}
     for param, paramType in registeredHelper["params"].items():
-        if param in json:  # Only update provided params
-            if paramType == "str" and not isinstance(json[param], str):
+        if param not in json["params"]:
+            raise exceptions.BadRequest(f"Missing required parameters", "missing_parameters")
+        if paramType == "str":
+            try:
+                json["params"][param] = str(json["params"][param])
+            except:
                 raise exceptions.BadRequest(f"Parameter {param} must be a string", "invalid_parameter_type")
-            if paramType == "int" and not isinstance(json[param], int):
+        if paramType == "int":
+            try:
+                json["params"][param] = int(json["params"][param])
+            except:
                 raise exceptions.BadRequest(f"Parameter {param} must be an integer", "invalid_parameter_type")
-            if paramType == "bool" and not isinstance(json[param], bool):
+        if paramType == "bool":
+            try:
+                json["params"][param] = bool(json["params"][param])
+            except:
                 raise exceptions.BadRequest(f"Parameter {param} must be a boolean", "invalid_parameter_type")
-            helperParams[param] = json[param]
+        helperParams[param] = json["params"][param]
+    
     
 
     if not registeredHelper["allow_execution_time_config"] and json.get("schedule"):
