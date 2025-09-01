@@ -29,7 +29,7 @@ class SystemTools:
                 helpers.append(json.loads(helperData))
         return helpers
     
-    async def cron_to_timestamps(self, expression, start, end):
+    def cron_to_timestamps(self, expression, start, end):
         base = datetime.datetime.fromtimestamp(start)
         cron = croniter.croniter(expression, base)
         times = []

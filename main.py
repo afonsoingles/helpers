@@ -45,6 +45,10 @@ async def main():
     await systemTools.clear_helpers()
     logger.info("[STARTUP] Cleared helpers cache on redis.")
 
+    logger.info("[STARTUP] Clearing execution queue...")
+    await queueTools.clear_queue()
+    logger.info("[STARTUP] Cleared execution queue on redis.")
+
     loadedHelpers = await startup.discover_helpers()
     logger.info(f"[STARTUP] Found {len(loadedHelpers)} helpers.")
 

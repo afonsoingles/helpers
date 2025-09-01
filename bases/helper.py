@@ -32,5 +32,5 @@ class BaseHelper:
         self.schedule = schedule
 
 
-    def run(self):
+    async def run(self):
         raise NotImplementedError("Each helper must implement the 'run' method.")
