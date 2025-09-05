@@ -52,19 +52,21 @@ async def main():
     loadedHelpers = await startup.discover_helpers()
     logger.info(f"[STARTUP] Found {len(loadedHelpers)} helpers.")
 
+    apiProcess = await asyncio.create_subprocess_exec(
+        "python", "-m", "uvicorn", "api.main:app",
+        "--host", "0.0.0.0",
+        "--port", os.environ.get("API_PORT", "8000"),
+        "--log-level", os.environ.get("API_LOG_LEVEL", "info"),
+        "--limit-concurrency", os.environ.get("API_LIMIT_CONCURRENCY", "500"),
+    )
+
+    logger.info(f"[STARTUP] Launched API process with PID {apiProcess.pid}.")
+    
     await queueTools.build_initial_execution_queue()
     logger.info("[STARTUP] Built initial execution queue.")
 
     try:
-        apiProcess = await asyncio.create_subprocess_exec(
-            "python", "-m", "uvicorn", "api.main:app",
-            "--host", "0.0.0.0",
-            "--port", os.environ.get("API_PORT", "8000"),
-            "--log-level", os.environ.get("API_LOG_LEVEL", "info"),
-            "--limit-concurrency", os.environ.get("API_LIMIT_CONCURRENCY", "500"),
-        )
-
-        logger.info(f"[STARTUP] Launched API process with PID {apiProcess.pid}.")
+        
         logger.info(f"[STARTUP] Startup complete. Enabling dispatcher.")
 
         await asyncio.gather(
