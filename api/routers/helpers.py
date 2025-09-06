@@ -163,27 +163,28 @@ async def updateHelper(request: Request, helperId: str, backgroundTasks: Backgro
         raise exceptions.NotFound("You do not have this helper registered", "helper_not_registered")
     
     helperParams = {}
-    for param, paramType in registeredHelper["params"].items():
-        if param not in json["params"]:
-            raise exceptions.BadRequest(f"Missing required parameters", "missing_parameters")
-        if paramType == "str":
-            try:
-                json["params"][param] = str(json["params"][param])
-            except:
-                raise exceptions.BadRequest(f"Parameter {param} must be a string", "invalid_parameter_type")
-        if paramType == "int":
-            try:
-                json["params"][param] = int(json["params"][param])
-            except:
-                raise exceptions.BadRequest(f"Parameter {param} must be an integer", "invalid_parameter_type")
-        if paramType == "bool":
-            try:
-                json["params"][param] = bool(json["params"][param])
-            except:
-                raise exceptions.BadRequest(f"Parameter {param} must be a boolean", "invalid_parameter_type")
-        helperParams[param] = json["params"][param]
-    
-    
+    if "params" not in json or json["params"] is None:
+        helperParams = helperInUser["params"]
+    else:
+        helperParams = helperInUser["params"].copy()  # Start with existing params
+        for param, paramType in registeredHelper["params"].items():
+            if param in json["params"]:
+                if paramType == "str":
+                    try:
+                        json["params"][param] = str(json["params"][param])
+                    except:
+                        raise exceptions.BadRequest(f"Parameter {param} must be a string", "invalid_parameter_type")
+                if paramType == "int":
+                    try:
+                        json["params"][param] = int(json["params"][param])
+                    except:
+                        raise exceptions.BadRequest(f"Parameter {param} must be an integer", "invalid_parameter_type")
+                if paramType == "bool":
+                    try:
+                        json["params"][param] = bool(json["params"][param])
+                    except:
+                        raise exceptions.BadRequest(f"Parameter {param} must be a boolean", "invalid_parameter_type")
+                helperParams[param] = json["params"][param]
 
     if not registeredHelper["allow_execution_time_config"] and json.get("schedule"):
         raise exceptions.BadRequest("This helper does not support custom scheduling", "scheduling_not_supported")
