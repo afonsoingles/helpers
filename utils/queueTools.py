@@ -62,14 +62,6 @@ class QueueTools:
                 continue
 
             if helperConfig["boot_run"]:
-                self.logger.info(f"[QUEUE] Scheduling boot_run for helper {helper['id']} for user {user_id}.")
-                await self.queue_job(
-                    helper_id=helper["id"],
-                    user_id=user_id,
-                    execution_time=int(datetime.datetime.now().timestamp()), # repeat bc currentTime maybe be older
-                    priority=helperConfig.get("priority", 3),
-                    execution_expiry=helperConfig.get("timeout", 3600),
-                )
                 continue
             
             if helperConfig["allow_execution_time_config"]:

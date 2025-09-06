@@ -17,6 +17,7 @@ class onStart(BaseHelper):
             priority=1,
             schedule=[],
             allow_execution_time_config=False,
+            timeout=100,
             **kwargs,
         )
 
