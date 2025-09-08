@@ -4,6 +4,7 @@ import api.errors.exceptions as exceptions
 from api.utils.authTools import AuthenticationTools
 from utils.mailer import Mailer
 from api.decorators.auth import authRequired
+from api.utils.ipData import IPData
 from datetime import datetime
 import pytz
 
@@ -11,6 +12,7 @@ import pytz
 router = APIRouter()
 authTools = AuthenticationTools()
 mailer = Mailer()
+ipData = IPData()
 
 
 
@@ -37,8 +39,9 @@ async def v2_signup(request: Request):
         "email": body.get("email"),
         "passwordHash": authTools.hash_password(body.get("password")),
         "admin": False,
-        "status": "active",
+        "status": "" ,
         "timezone": body.get("timezone", os.environ.get("TIMEZONE")),
+        "region": "",
         "pushConfiguration": [],
         "services": [],
         "createdAt": int(currentTime.timestamp()),
@@ -54,7 +57,31 @@ async def v2_signup(request: Request):
     if await authTools.get_user_by_username(userData["username"]):
         raise exceptions.BadRequest("This username is already taken", "username_taken")
     
+    userIp = ipData.get_ip_data(request.client.host)
+    if userIp.get("threat"):
+        if userIp["threat"]["is_tor"] or userIp["threat"]["is_datacenter"] or userIp["threat"]["is_anonymous"] or userIp["threat"]["is_known_attacker"] or userIp["threat"]["is_known_abuser"] or userIp["threat"]["is_threat"] or userIp["threat"]["is_bogon"]:
+            abuseFlag = True
+
+        if userIp["threat"]["threat_score"] >= 55 or userIp["trust_score"] <= 40:
+            abuseFlag = True
+    else:
+        abuseFlag = False
+    
+    userData["region"] = userIp["country_code"]
+    userData["status"] = "suspended" if abuseFlag else "active"
+
+
     await authTools.create_user(userData)
+    
+    if abuseFlag:
+        mailer.send_email(
+            sender="Helpers",
+            subject="Your account has been flagged",
+            templateName="abuse_detected",
+            to=userData["email"],
+            userName=userData["name"]
+        )
+        raise exceptions.Forbidden("Your account has been flagged. Please contact support", "account_flagged")
     
     return {"success": True, "message": "User created successfully. You can now log in."}
 

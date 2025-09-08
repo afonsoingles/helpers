@@ -1,0 +1,8 @@
+Hello {userName},
+
+Your account has been automatically flagged by our system for suspicious activity under your IP address.
+For security reasons, we temporarily suspended your account while we investigate this matter.
+If you believe this is a mistake or if you have any questions, please reply to this email.
+
+Best regards,
+The Helpers Team
