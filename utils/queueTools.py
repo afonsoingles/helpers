@@ -52,7 +52,7 @@ class QueueTools:
             if helper["enabled"] == False:
                 continue
             
-            if userData["region"] not in helperConfig["region_lock"]:
+            if userData["region"] not in helperConfig["region_lock"] and helperConfig["region_lock"] != ["*"]:
                 self.logger.warn(f"[QUEUE] Helper {helper['id']} is not available in user {user_id} region ({userData["region"]}). Skipping scheduling.")
                 continue
             helperConfig = await systemTools.get_registered_helper(helper["id"])
@@ -159,7 +159,7 @@ class QueueTools:
                         self.logger.warn(f"[QUEUE] Helper {helper['id']} is not available. Skipping scheduling for user {user['id']}.")
                         continue
                     
-                    if user["region"] not in helperConfig["region_lock"]:
+                    if user["region"] not in helperConfig["region_lock"] and helperConfig["region_lock"] != ["*"]:
                         self.logger.warn(f"[QUEUE] Helper {helper['id']} is not available in user {user['id']} region ({user['region']}). Skipping scheduling.")
                         continue
 
@@ -224,10 +224,10 @@ class QueueTools:
                             if helperConfig["boot_run"]:
                                 continue
                             
-                            if user["region"] not in helperConfig["region_lock"]:
+                            if user["region"] not in helperConfig["region_lock"] and helperConfig["region_lock"] != ["*"]:
                                 self.logger.warn(f"[REALTIME QUEUE] Helper {helper['id']} is not available in user {user['id']} region ({user['region']}). Skipping scheduling.")
                                 continue
-                            
+
                             if not helperConfig or helperConfig["disabled"] or helperConfig["internal"]:
                                 self.logger.warn(f"[REALTIME QUEUE] Helper {helper['id']} is not available. Skipping scheduling for user {user['id']}.")
                                 continue

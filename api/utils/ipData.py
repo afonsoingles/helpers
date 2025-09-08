@@ -5,8 +5,11 @@ from api.utils.redis import redisClient
 
 class IPData:
     
-    def get_ip_data(self, ip):
-        cachedData = redisClient.get(f"ipData:{ip}")
+    async def get_ip_data(self, ip):
+        if str(ip).startswith("192.") and os.environ.get("DB_ENV") == "development":
+            return {"country_code": "PT"}
+        cachedData = await redisClient.get(f"ipData:{ip}")
+        print(cachedData)
         if cachedData:
             return json.loads(cachedData)
         

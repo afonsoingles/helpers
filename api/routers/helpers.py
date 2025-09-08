@@ -51,7 +51,7 @@ async def registerHelper(request: Request, backgroundTasks: BackgroundTasks):
     if registeredHelper["internal"] == True or registeredHelper["disabled"] == True:
         raise exceptions.NotFound("This helper does not exist", "helper_not_found")
     
-    if request.state.user["region"] not in registeredHelper["region_lock"]:
+    if request.state.user["region"] not in registeredHelper["region_lock"] and registeredHelper["region_lock"] != ["*"]:
         raise exceptions.Forbidden("This helper is not available in your region", "region_locked")
     
     if registeredHelper["admin_only"] == True and not request.state.user["admin"]: # do not allow impersonation bc admin_only is for running admin helpers

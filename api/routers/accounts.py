@@ -21,6 +21,11 @@ ipData = IPData()
 @router.get("/v1/accounts/me", status_code=200)
 @authRequired(allowBanned=True)
 async def me(request: Request):
+    if not request.state.user.get("region"):
+        userIp = await ipData.get_ip_data(request.client.host)
+        request.state.user["region"] = userIp["country_code"]
+        await authTools.update_user(request.state.user["id"], request.state.user)
+
     return request.state.user
 
 
@@ -57,7 +62,7 @@ async def v2_signup(request: Request):
     if await authTools.get_user_by_username(userData["username"]):
         raise exceptions.BadRequest("This username is already taken", "username_taken")
     
-    userIp = ipData.get_ip_data(request.client.host)
+    userIp = await ipData.get_ip_data(request.client.host)
     if userIp.get("threat"):
         if userIp["threat"]["is_tor"] or userIp["threat"]["is_datacenter"] or userIp["threat"]["is_anonymous"] or userIp["threat"]["is_known_attacker"] or userIp["threat"]["is_known_abuser"] or userIp["threat"]["is_threat"] or userIp["threat"]["is_bogon"]:
             abuseFlag = True

@@ -15,7 +15,7 @@ class BaseHelper:
             allow_execution_time_config: bool = True, # can the user configure the execution time of this helper
             disabled: bool = False, # disable the helper entirely
             schedule: list = [], # helper running schedule (only required if allow_execution_time_config is False)
-            region_lock: list = [] # list of regions where this helper can run (empty means all regions are allowed)
+            region_lock: list = [] # list of regions where this helper can run (* means all regions are allowed)
         ):
         self.id = id
         self.name = name
