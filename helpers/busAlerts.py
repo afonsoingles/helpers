@@ -21,6 +21,7 @@ class busAlerts(BaseHelper):
             },
             priority=1,
             allow_execution_time_config=True,
+            region_lock=["PT"],
             **kwargs,
         )
 

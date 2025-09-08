@@ -52,6 +52,9 @@ class QueueTools:
             if helper["enabled"] == False:
                 continue
             
+            if userData["region"] not in helperConfig["region_lock"]:
+                self.logger.warn(f"[QUEUE] Helper {helper['id']} is not available in user {user_id} region ({userData["region"]}). Skipping scheduling.")
+                continue
             helperConfig = await systemTools.get_registered_helper(helper["id"])
             if not helperConfig or helperConfig["disabled"] or helperConfig["internal"]:
                 self.logger.warn(f"[QUEUE] Helper {helper['id']} is not available. Skipping scheduling for user {user_id}.")
@@ -106,7 +109,6 @@ class QueueTools:
 
     async def build_initial_execution_queue(self):
         self.logger.info("[QUEUE] Building initial execution queue...")
-        #TODO: handle para internal helpers
         activeUsers = await authTools.get_all_active_users()
         allHelpers = await systemTools.get_all_helpers()
         currentTime = int(datetime.datetime.now().timestamp())
@@ -157,6 +159,10 @@ class QueueTools:
                         self.logger.warn(f"[QUEUE] Helper {helper['id']} is not available. Skipping scheduling for user {user['id']}.")
                         continue
                     
+                    if user["region"] not in helperConfig["region_lock"]:
+                        self.logger.warn(f"[QUEUE] Helper {helper['id']} is not available in user {user['id']} region ({user['region']}). Skipping scheduling.")
+                        continue
+
                     if helperConfig["admin_only"] and not user["admin"]:
                         self.logger.warn(f"[QUEUE] Helper {helper['id']} is admin-only. Skipping scheduling for non-admin user {user['id']}.")
                         continue
@@ -216,6 +222,10 @@ class QueueTools:
                             helperConfig = await systemTools.get_registered_helper(helper["id"])
 
                             if helperConfig["boot_run"]:
+                                continue
+                            
+                            if user["region"] not in helperConfig["region_lock"]:
+                                self.logger.warn(f"[REALTIME QUEUE] Helper {helper['id']} is not available in user {user['id']} region ({user['region']}). Skipping scheduling.")
                                 continue
                             
                             if not helperConfig or helperConfig["disabled"] or helperConfig["internal"]:

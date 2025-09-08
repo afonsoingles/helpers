@@ -14,7 +14,8 @@ class BaseHelper:
             timeout: int = 100, # the maxium time in seconds this helper can run before being considered expired
             allow_execution_time_config: bool = True, # can the user configure the execution time of this helper
             disabled: bool = False, # disable the helper entirely
-            schedule: list = [] # helper running schedule (only required if allow_execution_time_config is False)
+            schedule: list = [], # helper running schedule (only required if allow_execution_time_config is False)
+            region_lock: list = [] # list of regions where this helper can run (empty means all regions are allowed)
         ):
         self.id = id
         self.name = name
@@ -30,6 +31,7 @@ class BaseHelper:
         self.allow_execution_time_config = allow_execution_time_config
         self.disabled = disabled
         self.schedule = schedule
+        self.region_lock = region_lock
 
 
     async def run(self):
