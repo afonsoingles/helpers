@@ -52,14 +52,15 @@ class QueueTools:
             if helper["enabled"] == False:
                 continue
             
-            if userData["region"] not in helperConfig["region_lock"] and helperConfig["region_lock"] != ["*"]:
-                self.logger.warn(f"[QUEUE] Helper {helper['id']} is not available in user {user_id} region ({userData["region"]}). Skipping scheduling.")
-                continue
+
             helperConfig = await systemTools.get_registered_helper(helper["id"])
             if not helperConfig or helperConfig["disabled"] or helperConfig["internal"]:
                 self.logger.warn(f"[QUEUE] Helper {helper['id']} is not available. Skipping scheduling for user {user_id}.")
                 continue
             
+            if userData["region"] not in helperConfig["region_lock"] and helperConfig["region_lock"] != ["*"]:
+                self.logger.warn(f"[QUEUE] Helper {helper['id']} is not available in user {user_id} region ({userData["region"]}). Skipping scheduling.")
+                continue
             if helperConfig["admin_only"] and not userData["admin"]:
                 self.logger.warn(f"[QUEUE] Helper {helper['id']} is admin-only. Skipping scheduling for non-admin user {user_id}.")
                 continue
