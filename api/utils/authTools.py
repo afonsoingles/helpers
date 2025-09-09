@@ -147,6 +147,14 @@ class AuthenticationTools:
         
         return users
     
+    async def get_all_active_users(self) -> list:
+        users = list(db.users.find({"status": "active"}))
+        for user in users:
+            user.pop("_id", None)
+            user.pop("passwordHash", None)
+        
+        return users
+    
     async def block_user(self, userId: str, reason: str) -> dict:
         user = await self.get_user_by_id(userId)
         if not user:

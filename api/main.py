@@ -8,6 +8,7 @@ from api.errors.handlers import create_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 import api.routers.notifications
 import api.routers.accounts
+import api.routers.helpers
 
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, title="Helpers API", version="1.0.0")
@@ -24,6 +25,7 @@ app.add_middleware(
 # Routers
 app.include_router(api.routers.notifications.router, tags=["Notifications"])
 app.include_router(api.routers.accounts.router, tags=["Accounts"])
+app.include_router(api.routers.helpers.router, tags=["Helpers"])
 
 
 # Bcrypt - Ignore __about__ warning
@@ -61,6 +63,7 @@ exceptionHandlers = {
     exceptions.Unauthorized: (status.HTTP_401_UNAUTHORIZED, "Unauthorized"),
     exceptions.MethodNotAllowed: (status.HTTP_405_METHOD_NOT_ALLOWED, "MethodNotAllowed"),
     exceptions.Forbidden: (status.HTTP_403_FORBIDDEN, "Forbidden"),
+    exceptions.Conflict: (status.HTTP_409_CONFLICT, "Conflict"),
 
 }
 

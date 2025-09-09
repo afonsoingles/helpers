@@ -53,6 +53,12 @@ def authRequired(func=None, *, admin: bool = False, allowBanned: bool = False):
                     type="account_blocked"
                 )
             
+            if request.state.user.get("status") == "abuse" and not request.state.impersonatedBy:
+                raise exceptions.Forbidden(
+                    message="User account is flagged. Please check your email for more information.",
+                    type="account_flagged"
+                )
+            
             if request.state.user.get("status") == "deletionPending" and not allowBanned:
                 raise exceptions.Forbidden(
                     message="User account is pending deletion",

@@ -261,7 +261,7 @@ async def v2_getNotifications(request: Request, page: int = 1, limit: int = 20):
 
     
 
-    notificationsList = await notificationTools.get_paginated_user_notifications(request.state.user["id"], page, limit)
+    notificationsList = await notificationTools.get_paginated_user_notifications(request.state.user["id"], request.state.user["createdAt"], page, limit)
 
     return {"success": True, "notifications": notificationsList}
 

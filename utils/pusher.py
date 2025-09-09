@@ -38,3 +38,21 @@ class Pusher:
             return r.json()
         except:
             return
+    
+    def push(self, sender, recipient, title, body, sound=None, data={}, ttl=0, isCritical=False):
+
+        r = requests.post(f"{os.environ.get('API_URL')}/v2/notifications/send", headers={
+            "X-Secure-Key": os.environ.get("SECURE_KEY"),
+        },
+        json={
+            "from": sender,
+            "to": recipient,
+            "title": title,
+            "body": body,
+            "sound": sound,
+            "data": data,
+            "ttl": ttl,
+            "isCritical": isCritical,
+        })
+
+        return r.json()

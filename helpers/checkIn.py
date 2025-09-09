@@ -1,27 +1,25 @@
 from bases.helper import BaseHelper
-from datetime import datetime
 import os
 import requests
 from main import logger
-import schedule
 
 class checkIn(BaseHelper):
-    def __init__(self):
-        super().__init__(run_at_start=True)
+    def __init__(self, **kwargs):
+        super().__init__(
+            id="checkIn",
+            name="Check In",
+            description="Sends heartbeats to Better Stack to monitor CRON uptime.",
+            boot_run=True,
+            priority=2,
+            schedule=["*/2 * * * *"],
+            internal=True,
+            allow_execution_time_config=False,
+            **kwargs,
+        )
 
-    def run(self):
-        logger.info(f"[checkIn] Started at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
+    async def run(self):
+        logger.info(f"[checkIn] Started! Sending heartbeat...")
 
         r = requests.get(os.environ.get("BETTER_STACK_HB"))
 
-        logger.info(f"[checkIn] Heartbeat - {r.status_code}, response: {r.text}")
-
-
-
-
-
-        logger.info(f"[checkIn] Finished at: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
-
-    def schedule(self):
-       
-        schedule.every(2).minutes.do(self.run)
+        logger.info(f"[checkIn] Heartbeat sent! Status code: {r.status_code}")

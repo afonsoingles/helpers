@@ -2,51 +2,83 @@ import os
 import importlib
 from bases.helper import BaseHelper
 import asyncio
-import logging
+import datetime
+import json
+from utils.logger import Logger
+from utils.systemTools import SystemTools
+from api.utils.authTools import AuthenticationTools
+from utils.queueTools import QueueTools
 
-logger = logging.getLogger("main")
+systemTools = SystemTools()
+authTools = AuthenticationTools()
+
 
 class Startup:
 
-    def discover_helpers(self):
-        helpers = []
+    def __init__(self, logger: Logger):
+        self.queueTools = QueueTools(logger)
+        self.logger = logger
 
+   
 
-        helperFiles = [file for file in os.listdir("helpers") if file.endswith('.py') ]
-
+    async def discover_helpers(self):
+        helperFiles = [file for file in os.listdir("helpers") if file.endswith('.py')]
+        loadedHelpers = []
 
         for file in helperFiles:
-            module_name = f"helpers.{file[:-3]}"
             try:
-                module = importlib.import_module(module_name)
-                for attr in dir(module):
-                    obj = getattr(module, attr)
+                helper = importlib.import_module(f"helpers.{file[:-3]}")
+                for attr in dir(helper):
+                    obj = getattr(helper, attr)
                     if isinstance(obj, type) and issubclass(obj, BaseHelper) and obj is not BaseHelper:
-                        logger.info(f"[STARTUP] Loaded helper: {obj.__name__}")
-                        helpers.append(obj())
+                        instance = obj()
+                        init_args = dict(instance.__dict__)
+                        await systemTools.register_helper(instance.id, json.dumps(init_args))
+                        loadedHelpers.append(instance.id)
+                        self.logger.info(f"[STARTUP] Loaded helper: {instance.name} with ID: {instance.id}")
             except Exception as e:
-                logger.error(f"Error importing helper {module_name}: {e}", e)
-        return helpers
-    
-    async def run_helper(self, helper):
-        if helper.run_at_start:
-            try:
-                logger.info(f"[STARTUP] Run Helper: {helper.__class__.__name__}")
-                await asyncio.to_thread(helper.run)
-            except Exception as e:
-                logger.error(f"Error running helper {helper.__class__.__name__} at startup: {e}", e)
-        try:
-            await asyncio.to_thread(helper.schedule)
-        except Exception as e:
-            logger.error(f"Error scheduling helper {helper.__class__.__name__}: {e}", e)
+                self.logger.warn(f"Unable to import helper on file {file}. Please check helper configuration!\n{e}")
 
-    
+        return loadedHelpers
+
+        
+    async def run_dispatcher(self):
+        while True:
+            try:
+                currentTime = int(datetime.datetime.now().timestamp())
+                jobs = await self.queueTools.get_jobs_to_run(currentTime)
+
+                for job in jobs:
+                    self.logger.info(f"[DISPATCHER] Processing job {job}...")
+                    try:
+                        jobData = await self.queueTools.get_job_details(job)
+                        executionTime = int(jobData.get("executionTime", 0))
+                        executionExpiry = int(jobData.get("executionExpiry", 0))
+                        userId = jobData.get("userId")
+                        helperId = jobData.get("helperId")
+                        jobId = job
+
+                        if currentTime > executionTime + executionExpiry:
+                            await self.queueTools.update_job_status(jobId, "expired")
+                        else:
+                            await self.queueTools.update_job_status(jobId, "running")
+                            userData = await authTools.get_user_by_id(userId)
+                            await systemTools.run_helper(helperId, userData)
+                            self.logger.info(f"[DISPATCHER] Dispatched job {jobId} for execution.")
+
+                    except Exception as e:
+                        self.logger.error(f"[DISPATCHER] Error processing job {jobId}", e)
+                await asyncio.sleep(1)
+            except Exception as e:
+                self.logger.error("[DISPATCHER] Error in dispatcher loop", e)
+
+
     def force_exit(self, apiProcess):
-        logger.info("[SHUTDOWN] Killing all tasks...")
-        try:
-            if apiProcess:
-                apiProcess.kill()
-        except Exception as e:
-            logger.error(f"Failed to kill API process: {e}", e)
-        os._exit(1)
+            self.logger.info("[SHUTDOWN] Killing all tasks...")
+            try:
+                if apiProcess:
+                    apiProcess.kill()
+            except Exception as e:
+                self.logger.error(f"Failed to kill API process: {e}", e)
+            os._exit(1)
 

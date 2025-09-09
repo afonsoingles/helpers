@@ -9,9 +9,16 @@ db = MongoHandler().db
 class NotificationTools:
 
 
-    async def get_paginated_user_notifications(self, userId, page: int = 1, limit: int = 20) -> list:
+    async def get_paginated_user_notifications(self, userId, ts, page: int = 1, limit: int = 20) -> list:
         notifications = list(
-            db.notifications.find({"$or": [{"to": userId}, {"to": "broadcasted"}]})
+            db.notifications.find(
+            {
+                "$and": [
+                {"$or": [{"to": userId}, {"to": "broadcasted"}]},
+                {"createdAt": {"$gt": datetime.datetime.fromtimestamp(ts).isoformat()}},
+                ]
+            }
+            )
             .sort("createdAt", -1)
             .skip((page - 1) * limit)
             .limit(limit)
