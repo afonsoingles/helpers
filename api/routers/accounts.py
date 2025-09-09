@@ -63,6 +63,7 @@ async def v2_signup(request: Request):
         raise exceptions.BadRequest("This username is already taken", "username_taken")
     
     userIp = await ipData.get_ip_data(request.client.host)
+    abuseFlag = False
     if userIp.get("threat"):
         if userIp["threat"]["is_tor"] or userIp["threat"]["is_datacenter"] or userIp["threat"]["is_anonymous"] or userIp["threat"]["is_known_attacker"] or userIp["threat"]["is_known_abuser"] or userIp["threat"]["is_threat"] or userIp["threat"]["is_bogon"]:
             abuseFlag = True
