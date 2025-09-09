@@ -18,6 +18,7 @@ class onStart(BaseHelper):
             schedule=[],
             allow_execution_time_config=False,
             timeout=100,
+            region_lock=["*"],
             **kwargs,
         )
 
