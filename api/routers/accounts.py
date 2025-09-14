@@ -68,8 +68,6 @@ async def v2_signup(request: Request):
         if userIp["threat"]["is_tor"] or userIp["threat"]["is_datacenter"] or userIp["threat"]["is_anonymous"] or userIp["threat"]["is_known_attacker"] or userIp["threat"]["is_known_abuser"] or userIp["threat"]["is_threat"] or userIp["threat"]["is_bogon"]:
             abuseFlag = True
 
-        if userIp["threat"]["threat_score"] >= 55 or userIp["trust_score"] <= 40:
-            abuseFlag = True
     else:
         abuseFlag = False
     
